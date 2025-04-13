@@ -1,10 +1,10 @@
 const express = require("express");
-const { createData, getData, updateData, deleteData } = require("../controllers/dataController");
+const { createData, getAllData, updateData, deleteData } = require("../controllers/dataController");
 
 const router = express.Router();
 
 router.post("/", createData);
-router.get("/", getData);
+router.get("/", getAllData);
 router.put("/:id", updateData);
 router.delete("/:id", deleteData);
 

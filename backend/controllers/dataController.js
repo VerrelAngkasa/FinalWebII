@@ -3,8 +3,8 @@ const Data = require("../models/Data");
 // Create a new data
 exports.createData = async (req, res) => {
   try {
-    const { id, nomor_plat, nama, merk } = req.body;
-    const newData = new Data({ id, nomor_plat, nama, merk });
+    const { nomor_plat, nama, merk } = req.body;
+    const newData = new Data({ nomor_plat, nama, merk });
     const savedData = await newData.save();
     res.status(201).json(savedData);
   } catch (error) {
@@ -13,7 +13,7 @@ exports.createData = async (req, res) => {
 };
 
 // Get all data
-exports.getData = async (req, res) => {
+exports.getAllData = async (req, res) => {
   try {
     const data = await Data.find().sort({ createdAt: -1 });
     res.status(200).json(data);
@@ -30,7 +30,7 @@ exports.updateData = async (req, res) => {
     const updatedData = await Data.findByIdAndUpdate(id, { nomor_plat }, { new: true });
     res.status(200).json(updatedData);
   } catch (error) {
-    res.status(500).json({ message: "Error updating data", error });
+    res.status(500).json({ message: `Error updating ${id} data`, error });
   }
 };
 
@@ -39,7 +39,7 @@ exports.deleteData = async (req, res) => {
   try {
     const { id } = req.params;
     await Data.findByIdAndDelete(id);
-    res.status(200).json({ message: "Data deleted successfully" });
+    res.status(200).json({ message: `Data ${id} deleted successfully` });
   } catch (error) {
     res.status(500).json({ message: "Error deleting Data", error });
   }
