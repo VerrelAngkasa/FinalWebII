@@ -5,7 +5,7 @@ const router = express.Router();
 
 router.post("/", createSTNK);
 router.get("/", getAllSTNK);
-router.put("/:id", updateSTNK);
-router.delete("/:id", deleteSTNK);
+router.put("/id", updateSTNK);
+router.delete("/id", deleteSTNK);
 
 module.exports = router;

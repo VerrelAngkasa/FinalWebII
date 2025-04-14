@@ -24,9 +24,9 @@ exports.createSTNK = async (req, res) => {
 
     const newSTNK = new STNK({ layanan, nomor_plat, nama, merk, tipe, tahun });
     const savedSTNK = await newSTNK.save();
-    res.status(201).json({ message: `Successfully created new STNK ${id} data`, savedSTNK });
+    res.status(201).json({ message: `Successfully created new ${layanan} data`, savedSTNK });
   } catch (err) {
-    res.status(500).json({ message: "Error creating new STNK data", err });
+    res.status(500).json({ message: `Error creating new ${layanan} data`, err });
   }
 };
 
@@ -36,14 +36,14 @@ exports.getAllSTNK = async (req, res) => {
     const stnk = await STNK.find().sort({ createdAt: -1 });
     res.status(200).json(stnk);
   } catch (err) {
-    res.status(500).json({ message: `Error fetching STNK ${id} data`, err });
+    res.status(500).json({ message: `Error fetching STNK data`, err });
   }
 };
 
 // Update STNK
 exports.updateSTNK = async (req, res) => {
   try {
-    const { id } = req.params;
+    const id = req.query.id;
     const { nomor_plat } = req.body;
     const updatedAt = new Date().toISOString();
     const updatedSTNK = await STNK.findByIdAndUpdate(id, { nomor_plat, updatedAt }, { new: true });
@@ -56,7 +56,7 @@ exports.updateSTNK = async (req, res) => {
 // Delete STNK
 exports.deleteSTNK = async (req, res) => {
   try {
-    const { id } = req.params;
+    const id = req.query.id;
     await STNK.findByIdAndDelete(id);
     res.status(200).json({ message: `STNK ${id} deleted successfully` });
   } catch (err) {

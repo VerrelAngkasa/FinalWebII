@@ -5,7 +5,7 @@ const router = express.Router();
 
 router.post("/", createSIM);
 router.get("/", getAllSIM);
-router.put("/:id", updateSIM);
-router.delete("/:id", deleteSIM);
+router.put("/id", updateSIM);
+router.delete("/id", deleteSIM);
 
 module.exports = router;

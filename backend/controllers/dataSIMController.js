@@ -24,9 +24,9 @@ exports.createSIM = async (req, res) => {
 
     const newSIM = new SIM({ layanan, nomor_plat, nama, merk, tipe, tahun });
     const savedSIM = await newSIM.save();
-    res.status(201).json({ message: `Successfully created new SIM ${id} data`, savedSIM });
+    res.status(201).json({ message: `Successfully created new ${layanan} data`, savedSIM });
   } catch (err) {
-    res.status(500).json({ message: "Error creating new SIM data", err });
+    res.status(500).json({ message: `Error creating new ${layanan} data`, err });
   }
 };
 
@@ -36,14 +36,14 @@ exports.getAllSIM = async (req, res) => {
     const sim = await SIM.find().sort({ createdAt: -1 });
     res.status(200).json(sim);
   } catch (err) {
-    res.status(500).json({ message: `Error fetching SIM ${id} data`, err });
+    res.status(500).json({ message: `Error fetching SIM data`, err });
   }
 };
 
 // Update SIM
 exports.updateSIM = async (req, res) => {
   try {
-    const { id } = req.params;
+    const id = req.query.id;
     const { nomor_plat } = req.body;
     const updatedAt = new Date().toISOString();
     const updatedSIM = await SIM.findByIdAndUpdate(id, { nomor_plat, updatedAt }, { new: true });
@@ -56,7 +56,7 @@ exports.updateSIM = async (req, res) => {
 // Delete SIM
 exports.deleteSIM = async (req, res) => {
   try {
-    const { id } = req.params;
+    const id = req.query.id;
     await SIM.findByIdAndDelete(id);
     res.status(200).json({ message: `SIM ${id} deleted successfully` });
   } catch (err) {
