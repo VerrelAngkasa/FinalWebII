@@ -16,6 +16,10 @@ const stnkSchema = new mongoose.Schema({
         required: true,
         trim: true,
     },
+    alamat: {
+        type: String,
+        required: true,
+    },
     merk: {
         type: String,
         required: true,
@@ -25,6 +29,10 @@ const stnkSchema = new mongoose.Schema({
         required: true,
     },
     tahun: {
+        type: Number,
+        required: true,
+    },
+    harga: {
         type: Number,
         required: true,
     },

@@ -6,17 +6,12 @@ const simSchema = new mongoose.Schema({
         required: true,
         enum: ["Pembaharuan STNK", "Pembuatan SIM"],
     },
-    nomor_plat: {
-        type: String,
-        required: true,
-        trim: true, 
-    },
     nama: {
         type: String,
         required: true,
         trim: true,
     },
-    merk: {
+    alamat: {
         type: String,
         required: true,
     },
@@ -25,6 +20,10 @@ const simSchema = new mongoose.Schema({
         required: true,
     },
     tahun: {
+        type: Number,
+        required: true,
+    },
+    harga: {
         type: Number,
         required: true,
     },

@@ -24,8 +24,8 @@ mongoose.connect(process.env.MONGO_URI, {
 
 // Routes
 app.use('/admin', adminRoutes);
-app.use('/data/stnk', dataSTNKRoutes);
-app.use('/data/sim', dataSIMRoutes);
+app.use('/api/stnk', dataSTNKRoutes);
+app.use('/api/sim', dataSIMRoutes);
 
 // Start Server
 app.listen(PORT, () => {
