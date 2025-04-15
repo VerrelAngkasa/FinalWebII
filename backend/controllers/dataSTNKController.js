@@ -33,7 +33,17 @@ exports.createSTNK = async (req, res) => {
 exports.getAllSTNK = async (req, res) => {
   try {
     const stnk = await STNK.find().sort({ createdAt: -1 });
-    res.status(200).json(stnk);
+    const stnkDetails = stnk.map((stnk) => {
+      return {
+        id: stnk._id,
+        nomor_plat: stnk.nomor_plat,
+        nama: stnk.nama,
+        tahun: stnk.tahun,
+        harga: stnk.harga,
+        updatedAt: stnk.updatedAt,
+      };
+    })
+    res.status(200).json(stnkDetails);
   } catch (err) {
     res.status(500).json({ message: `Error fetching STNK data`, err });
   }

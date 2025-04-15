@@ -33,7 +33,17 @@ exports.createSIM = async (req, res) => {
 exports.getAllSIM = async (req, res) => {
   try {
     const sim = await SIM.find().sort({ createdAt: -1 });
-    res.status(200).json(sim);
+    const simDetails = sim.map((sim) => {
+      return {
+        id: sim._id,
+        nama: sim.nama,
+        tipe: sim.tipe,
+        tahun: sim.tahun,
+        harga: sim.harga,
+        updatedAt: sim.updatedAt,
+      };
+    })
+    res.status(200).json(simDetails);
   } catch (err) {
     res.status(500).json({ message: `Error fetching SIM data`, err });
   }
