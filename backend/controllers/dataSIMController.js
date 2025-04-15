@@ -2,9 +2,8 @@ const SIM = require("../models/SIM");
 
 // Create New Data SIM
 exports.createSIM = async (req, res) => {
+  const { layanan, nama, alamat, tipe, tahun, harga } = req.body;
   try {
-    const { layanan, nama, alamat, tipe, tahun, harga } = req.body;
-
     // Check if the required fields are provided
     if (!layanan || !nama || !alamat || !tipe || !tahun || !harga) {
       return res.status(400).json({ message: "Please fill in all fields" });
@@ -44,6 +43,7 @@ exports.getSIMById = async (req, res) => {
   const id = req.query.id;
   try {
     const sim = await SIM.findById(id);
+
     if (!sim) {
       return res.status(404).json({ message: `SIM data with ID ${id} not found` });
     }
@@ -58,6 +58,15 @@ exports.updateSIMById = async (req, res) => {
   const id = req.query.id;
   const tipe = req.body;
   try {
+    if (!tipe) {
+      return res.status(400).json({ message: 'Please fill in the required field '})
+    }
+
+    const validSIM = ['SIM A', 'SIM B', 'SIM C'];
+    if (!validSIM.includes(tipe)) {
+      return res.status(400).json({ message: "Invalid SIM type" });
+    }
+
     const updatedAt = new Date().toISOString();
     const updatedSIM = await SIM.findByIdAndUpdate(id, { tipe, updatedAt }, { new: true });
     res.status(200).json({ message: `Successfully update SIM ${id} data`, updatedSIM });

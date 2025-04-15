@@ -6,8 +6,8 @@ const router = express.Router();
 
 router.post("/", validateToken, createSTNK);
 router.get("/", validateToken, getAllSTNK);
-router.get("/data", validateToken, getSTNKById);
-router.put("/data", validateToken, updateSTNKById);
-router.delete("/data", validateToken, deleteSTNKById);
+router.get("/id", validateToken, getSTNKById);
+router.put("/id", validateToken, updateSTNKById);
+router.delete("/id", validateToken, deleteSTNKById);
 
 module.exports = router;

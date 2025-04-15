@@ -2,9 +2,8 @@ const STNK = require("../models/STNK");
 
 // Create New Data STNK
 exports.createSTNK = async (req, res) => {
+  const { layanan, nomor_plat, nama, alamat, merk, tipe, tahun, harga } = req.body;
   try {
-    const { layanan, nomor_plat, nama, alamat, merk, tipe, tahun, harga } = req.body;
-
     // Check if the required fields are provided
     if (!layanan || !nomor_plat || !nama || !alamat || !merk || !tipe || !tahun || !harga) {
       return res.status(400).json({ message: "Please fill in all fields" });
@@ -58,6 +57,10 @@ exports.updateSTNKById = async (req, res) => {
   const id = req.query.id;
   const nomor_plat = req.body;
   try {
+    if(!nomor_plat) {
+      res.status(400).json({ message: 'Please fill in the required field'})
+    }
+
     const updatedAt = new Date().toISOString();
     const updatedSTNK = await STNK.findByIdAndUpdate(id, { nomor_plat, updatedAt }, { new: true });
     res.status(200).json({ message: `Successfully update STNK ${id} data`, updatedSTNK });

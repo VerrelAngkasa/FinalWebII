@@ -6,8 +6,8 @@ const router = express.Router();
 
 router.post("/", validateToken, createSIM);
 router.get("/", validateToken, getAllSIM);
-router.get("/data", validateToken, getSIMById);
-router.put("/data", validateToken, updateSIMById);
-router.delete("/data", validateToken, deleteSIMById);
+router.get("/id", validateToken, getSIMById);
+router.put("/id", validateToken, updateSIMById);
+router.delete("/id", validateToken, deleteSIMById);
 
 module.exports = router;
