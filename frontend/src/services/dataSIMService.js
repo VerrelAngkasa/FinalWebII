@@ -12,6 +12,7 @@ export const getAllSIM = async () => {
     }
 };
 
+// Get SIM Data by ID
 export const getSIMById = async (id, data) => {
     try {
         const response = await axios.get(`/data/sim/id?${id}`, data);

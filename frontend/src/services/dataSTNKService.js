@@ -12,6 +12,7 @@ export const getAllSTNK = async () => {
     }
 };
 
+// Get STNK Data by ID
 export const getSTNKById = async (id, data) => {
     try {
         const response = await axios.get(`/data/stnk/id?${id}`, data);
