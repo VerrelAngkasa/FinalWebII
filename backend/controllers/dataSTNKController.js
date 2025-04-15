@@ -55,7 +55,7 @@ exports.getSTNKById = async (req, res) => {
 // Update STNK
 exports.updateSTNKById = async (req, res) => {
   const id = req.query.id;
-  const nomor_plat = req.body;
+  const { nomor_plat } = req.body;
   try {
     if(!nomor_plat) {
       res.status(400).json({ message: 'Please fill in the required field'})

@@ -56,13 +56,13 @@ exports.getSIMById = async (req, res) => {
 // Update SIM
 exports.updateSIMById = async (req, res) => {
   const id = req.query.id;
-  const tipe = req.body;
+  const { tipe } = req.body;
   try {
     if (!tipe) {
       return res.status(400).json({ message: 'Please fill in the required field '})
     }
 
-    const validSIM = ['SIM A', 'SIM B', 'SIM C'];
+    const validSIM = ['SIM A', 'SIM B1', 'SIM C'];
     if (!validSIM.includes(tipe)) {
       return res.status(400).json({ message: "Invalid SIM type" });
     }

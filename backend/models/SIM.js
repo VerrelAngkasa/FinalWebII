@@ -18,7 +18,7 @@ const simSchema = new mongoose.Schema({
     tipe: {
         type: String,
         required: true,
-        enum: ['SIM A', 'SIM B', 'SIM C'],
+        enum: ['SIM A', 'SIM B1', 'SIM C'],
     },
     tahun: {
         type: Number,
