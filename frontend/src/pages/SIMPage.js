@@ -1,115 +1,100 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Container, VStack, Heading, useToast } from '@chakra-ui/react';
+import { Container, Stack, Title } from '@mantine/core';
+import { showNotification } from '@mantine/notifications';
 import SIMForm from '../components/SIMForm';
-import SIMList from '../components/STNKForm';
+import SIMList from '../components/SIMList';
 import * as dataSIMService from '../services/dataSIMService';
 
 const SIMPage = () => {
-    const [sim, setSIMData] = useState([]);
-    const [editingSIM, setEditingSIM] = useState(null);
-    const toast = useToast();
+  const [sim, setSIMData] = useState([]);
+  const [editingSIM, setEditingSIM] = useState(null);
 
-    const fetchSIMData = useCallback(async () => {
-        try {
-            const fetchedSIMData = await dataSIMService.getAllSIM();
-            setSIMData(fetchedSIMData);
-        } catch (err) {
-            toast({
-                title: 'Error fetching SIM data',
-                status: 'error',
-                duration: 3000,
-                isClosable: true,
-            });
-        }
+  const fetchSIMData = useCallback(async () => {
+    try {
+      const fetchedSIMData = await dataSIMService.getAllSIM();
+      setSIMData(fetchedSIMData);
+    } catch (err) {
+      showNotification({
+        title: 'Gagal mengambil data SIM',
+        color: 'red',
+        message: 'Terjadi kesalahan saat memuat data dari server.',
+      });
+    }
+  }, []);
 
-    }, [toast]);
+  useEffect(() => {
+    fetchSIMData();
+  }, [fetchSIMData]);
 
-    useEffect(() => {
-        fetchSIMData();
-    }, [fetchSIMData]);
+  const handleAddSIM = async (simData) => {
+    try {
+      if (simData._id) {
+        const updatedSIM = await dataSIMService.updateSIMById(simData._id, {
+          tipe: simData.tipe,
+        });
+        setSIMData(sim.map((s) => (s._id === simData._id ? updatedSIM : s)));
+        setEditingSIM(null);
 
-    const handleAddSIM = async (simData) => {
-        try {
-            if (simData._id) {
-                const updateSIM = await dataSIMService.updateSIMById(simData._id, {
-                    tipe: simData.tipe,
-                });
+        showNotification({
+          title: 'Berhasil diperbarui',
+          message: 'Data SIM berhasil diperbarui.',
+          color: 'green',
+        });
+      } else {
+        const newSIM = await dataSIMService.createSIM(simData);
+        setSIMData([newSIM, ...sim]);
 
-                // Update SIM data at state
-                setSIMData(sim.map((sim) => (sim._id === simData._id ? updateSIM : sim)));
+        showNotification({
+          title: 'Berhasil ditambahkan',
+          message: 'Data SIM baru berhasil ditambahkan.',
+          color: 'green',
+        });
+      }
+    } catch (err) {
+      showNotification({
+        title: 'Terjadi kesalahan',
+        message: 'Gagal menambahkan atau memperbarui data SIM.',
+        color: 'red',
+      });
+    }
+  };
 
-                // Reset editingSIM state
-                setEditingSIM(null);
+  const handleDeleteSIM = async (id) => {
+    try {
+      await dataSIMService.deleteSIMById(id);
+      setSIMData(sim.filter((s) => s._id !== id));
 
-                toast({
-                    title: 'Successfully updated SIM data',
-                    status: 'success',
-                    duration: 3000,
-                    isClosable: true,
-                });
-            } else {
-                // Proses tambah catatan baru
-                const newSIM = await dataSIMService.createSIM(simData);
-                setSIMData([newSIM, ...sim]);
+      if (editingSIM && editingSIM._id === id) {
+        setEditingSIM(null);
+      }
 
-                toast({
-                    title: 'Successfully created new SIM data',
-                    status: 'success',
-                    duration: 3000,
-                    isClosable: true,
-                });
-            }
-        } catch (err) {
-            toast({
-                title: "Error handling SIM data",
-                status: "error",
-                duration: 3000,
-                isClosable: true,
-            });
-        }
-    };
+      showNotification({
+        title: 'Berhasil dihapus',
+        message: 'Data SIM berhasil dihapus.',
+        color: 'green',
+      });
+    } catch (err) {
+      showNotification({
+        title: 'Gagal menghapus',
+        message: 'Terjadi kesalahan saat menghapus data SIM.',
+        color: 'red',
+      });
+    }
+  };
 
-    const handleDeleteSIM = async (id) => {
-        try {
-            await dataSIMService.deleteSIMById(id);
-            setSIMData(sim.filter((sim) => sim._id !== id));
+  const handleEditSIM = (sim) => {
+    setEditingSIM(sim);
+  };
 
-            // Reset editing SIM if SIM data is being deleted
-            if (editingSIM && editingSIM._id === id) {
-                setEditingSIM(null);
-            }
-
-            toast({
-                title: 'Successfully deleted SIM data',
-                status: 'success',
-                duration: 3000,
-                isClosable: true,
-            });
-        } catch (err) {
-            toast({
-                title: 'Error deleting SIM data',
-                status: 'error',
-                duration: 3000,
-                isClosable: true,
-            });
-        }
-    };
-
-    const handleEditSIM = (sim) => {
-        setEditingSIM(sim);
-    };
-
-    return (
-        <Container maxW = 'container.md' py={8}>
-            <VStack spacing = {8} width = 'full'>
-                <Heading>Aplikasi Sumatra Jaya Abadi</Heading>
-
-                <SIMForm onSubmit={handleAddSIM} initialSIM={editingSIM} />
-
-                <SIMList sim={sim} onDelete={handleDeleteSIM} onEdit={handleEditSIM} />
-            </VStack>
-        </Container>
-    );
+  return (
+    <Container size="md" py="lg">
+      <Stack spacing="xl">
+        <Title order={2}>Pembuatan SIM | Sumatra Jaya Abadi</Title>
+        <SIMForm onSubmit={handleAddSIM} initialSIM={editingSIM} />
+        <SIMList sim={sim} onDelete={handleDeleteSIM} onEdit={handleEditSIM} />
+      </Stack>
+    </Container>
+  );
 };
 
 export default SIMPage;

@@ -1,9 +1,11 @@
-import logo from './logo.svg';
+// import logo from './logo.svg';
 import './App.css';
 import SIMPage from './pages/SIMPage';
+// import STNKPage from './pages/STNKPage';
 
 function App() {
   return <SIMPage />;
+  // return <STNKPage />;
 }
 
 // function App() {
