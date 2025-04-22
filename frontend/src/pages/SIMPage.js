@@ -1,24 +1,21 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Container, Stack, Title } from '@mantine/core';
-import { showNotification } from '@mantine/notifications';
+import { Container, Row, Col, Button, Alert } from 'react-bootstrap';
+import { showNotification } from '@mantine/notifications'; // Keep this if you want to use Mantine notifications
 import SIMForm from '../components/SIMForm';
 import SIMList from '../components/SIMList';
-import * as dataSIMService from '../services/dataSIMService';
+import * as dataSIMService from '../services/SIMService';
 
 const SIMPage = () => {
   const [sim, setSIMData] = useState([]);
   const [editingSIM, setEditingSIM] = useState(null);
+  const [error, setError] = useState(null);
 
   const fetchSIMData = useCallback(async () => {
     try {
       const fetchedSIMData = await dataSIMService.getAllSIM();
       setSIMData(fetchedSIMData);
     } catch (err) {
-      showNotification({
-        title: 'Gagal mengambil data SIM',
-        color: 'red',
-        message: 'Terjadi kesalahan saat memuat data dari server.',
-      });
+      setError(err.message || 'Error fetching SIM data');
     }
   }, []);
 
@@ -36,8 +33,8 @@ const SIMPage = () => {
         setEditingSIM(null);
 
         showNotification({
-          title: 'Berhasil diperbarui',
-          message: 'Data SIM berhasil diperbarui.',
+          title: 'Successfully updated',
+          message: 'SIM data updated.',
           color: 'green',
         });
       } else {
@@ -45,15 +42,16 @@ const SIMPage = () => {
         setSIMData([newSIM, ...sim]);
 
         showNotification({
-          title: 'Berhasil ditambahkan',
-          message: 'Data SIM baru berhasil ditambahkan.',
+          title: 'Successfully added',
+          message: 'New SIM data added.',
           color: 'green',
         });
       }
     } catch (err) {
+      setError(err.message || 'Failed to add or update SIM data.');
       showNotification({
-        title: 'Terjadi kesalahan',
-        message: 'Gagal menambahkan atau memperbarui data SIM.',
+        title: 'Error',
+        message: err.message || 'Failed to add or update SIM data.',
         color: 'red',
       });
     }
@@ -69,30 +67,53 @@ const SIMPage = () => {
       }
 
       showNotification({
-        title: 'Berhasil dihapus',
-        message: 'Data SIM berhasil dihapus.',
+        title: 'Successfully deleted',
+        message: 'SIM data deleted.',
         color: 'green',
       });
     } catch (err) {
+      setError(err.message || 'Failed to delete SIM data.');
       showNotification({
-        title: 'Gagal menghapus',
-        message: 'Terjadi kesalahan saat menghapus data SIM.',
+        title: 'Error',
+        message: err.message || 'Failed to delete SIM data.',
         color: 'red',
       });
     }
   };
 
-  const handleEditSIM = (sim) => {
+  const handleEditSIM = async (sim) => {
     setEditingSIM(sim);
+    try {
+      const simData = await dataSIMService.getSIMById(sim._id); // Fetch data by ID for editing
+      setEditingSIM(simData);
+    } catch (err) {
+      setError(err.message || 'Error fetching SIM data for editing');
+      showNotification({
+        title: 'Error',
+        message: err.message || 'Failed to fetch SIM data for editing.',
+        color: 'red',
+      });
+    }
   };
 
   return (
-    <Container size="md" py="lg">
-      <Stack spacing="xl">
-        <Title order={2}>Pembuatan SIM | Sumatra Jaya Abadi</Title>
-        <SIMForm onSubmit={handleAddSIM} initialSIM={editingSIM} />
-        <SIMList sim={sim} onDelete={handleDeleteSIM} onEdit={handleEditSIM} />
-      </Stack>
+    <Container className="mt-5">
+      {error && (
+        <Alert variant="danger">
+          {error}
+        </Alert>
+      )}
+      <Row>
+        <Col>
+          <h2 className="mb-4">Pembuatan SIM | Sumatra Jaya Abadi</h2>
+          <SIMForm onSubmit={handleAddSIM} initialSIM={editingSIM} />
+        </Col>
+      </Row>
+      <Row>
+        <Col>
+          <SIMList sim={sim} onDelete={handleDeleteSIM} onEdit={handleEditSIM} />
+        </Col>
+      </Row>
     </Container>
   );
 };

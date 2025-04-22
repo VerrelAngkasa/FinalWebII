@@ -1,115 +1,93 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Container, VStack, Heading, Toast } from '@chakra-ui/react';
+import { Container, Row, Col, Alert } from 'react-bootstrap';
 import STNKForm from '../components/STNKForm';
 import STNKList from '../components/STNKList';
-import * as dataSTNKService from '../services/dataSTNKService';
+import * as dataSTNKService from '../services/STNKService';
 
 const STNKPage = () => {
-    const [stnk, setSTNKData] = useState([]);
-    const [editingSTNK, setEditingSTNK] = useState(null);
-    const toast = Toast();
+  const [stnk, setSTNKData] = useState([]);
+  const [editingSTNK, setEditingSTNK] = useState(null);
+  const [alert, setAlert] = useState(null);
 
-    const fetchSTNKData = useCallback(async () => {
-        try {
-            const fetchedSTNKData = await dataSTNKService.getAllSTNK();
-            setSTNKData(fetchedSTNKData);
-        } catch (err) {
-            toast({
-                title: 'Error fetching STNK data',
-                status: 'error',
-                duration: 3000,
-                isClosable: true,
-            });
-        }
+  const fetchSTNKData = useCallback(async () => {
+    try {
+      const fetchedSTNKData = await dataSTNKService.getAllSTNK();
+      setSTNKData(fetchedSTNKData);
+    } catch (err) {
+      setAlert({ type: 'danger', message: 'Gagal memuat data STNK' });
+    }
+  }, []);
 
-    }, [toast]);
+  useEffect(() => {
+    fetchSTNKData();
+  }, [fetchSTNKData]);
 
-    useEffect(() => {
-        fetchSTNKData();
-    }, [fetchSTNKData]);
+  const handleAddSTNK = async (stnkData) => {
+    try {
+      if (stnkData._id) {
+        const updated = await dataSTNKService.updateSTNKById(stnkData._id, stnkData);
+        setSTNKData((prev) =>
+          prev.map((s) => (s._id === stnkData._id ? updated : s))
+        );
+        setAlert({ type: 'success', message: 'Data STNK berhasil diperbarui' });
+      } else {
+        const created = await dataSTNKService.createSTNK(stnkData);
+        setSTNKData((prev) => [created, ...prev]);
+        setAlert({ type: 'success', message: 'Data STNK berhasil ditambahkan' });
+      }
+      setEditingSTNK(null);
+    } catch (err) {
+      setAlert({ type: 'danger', message: 'Gagal memproses data STNK' });
+    }
+  };
 
-    const handleAddSTNK = async (stnkData) => {
-        try {
-            if (stnkData._id) {
-                const updateSTNK = await dataSTNKService.updateSTNKById(stnkData._id, {
-                    tipe: stnkData.tipe,
-                });
+  const handleDeleteSTNK = async (id) => {
+    try {
+      await dataSTNKService.deleteSTNKById(id);
+      setSTNKData((prev) => prev.filter((s) => s._id !== id));
+      setAlert({ type: 'success', message: 'Data STNK berhasil dihapus' });
 
-                // Update STNK data at state
-                setSTNKData(stnk.map((stnk) => (stnk._id === stnkData._id ? updateSTNK : stnk)));
+      if (editingSTNK && editingSTNK._id === id) {
+        setEditingSTNK(null);
+      }
+    } catch (err) {
+      setAlert({ type: 'danger', message: 'Gagal menghapus data STNK' });
+    }
+  };
 
-                // Reset editingSTNK state
-                setEditingSTNK(null);
+  const handleEditSTNK = async (stnk) => {
+    try {
+      const data = await dataSTNKService.getSTNKById(stnk._id);
+      setEditingSTNK(data);
+    } catch (err) {
+      setAlert({ type: 'danger', message: 'Gagal memuat detail data STNK' });
+    }
+  };
 
-                toast({
-                    title: 'Successfully updated STNK data',
-                    status: 'success',
-                    duration: 3000,
-                    isClosable: true,
-                });
-            } else {
-                // Proses tambah catatan baru
-                const newSTNK = await dataSTNKService.createSTNK(stnkData);
-                setSTNKData([newSTNK, ...stnk]);
+  return (
+    <Container className="py-4">
+      <h2 className="mb-4 text-center">Pembaharuan STNK | Sumatra Jaya Abadi</h2>
 
-                toast({
-                    title: 'Successfully created new STNK data',
-                    status: 'success',
-                    duration: 3000,
-                    isClosable: true,
-                });
-            }
-        } catch (err) {
-            toast({
-                title: "Error handling STNK data",
-                status: "error",
-                duration: 3000,
-                isClosable: true,
-            });
-        }
-    };
+      {alert && (
+        <Alert
+          variant={alert.type}
+          dismissible
+          onClose={() => setAlert(null)}
+        >
+          {alert.message}
+        </Alert>
+      )}
 
-    const handleDeleteSTNK = async (id) => {
-        try {
-            await dataSTNKService.deleteSTNKById(id);
-            setSTNKData(stnk.filter((stnk) => stnk._id !== id));
-
-            // Reset editing STNK if STNK data is being deleted
-            if (editingSTNK && editingSTNK._id === id) {
-                setEditingSTNK(null);
-            }
-
-            toast({
-                title: 'Successfully deleted STNK data',
-                status: 'success',
-                duration: 3000,
-                isClosable: true,
-            });
-        } catch (err) {
-            toast({
-                title: 'Error deleting STNK data',
-                status: 'error',
-                duration: 3000,
-                isClosable: true,
-            });
-        }
-    };
-
-    const handleEditSTNK = (stnk) => {
-        setEditingSTNK(stnk);
-    };
-
-    return (
-        <Container maxW = 'container.md' py={8}>
-            <VStack spacing = {8} width = 'full'>
-                <Heading>Pembaharuan STNK Sumatra Jaya Abadi</Heading>
-
-                <STNKForm onSubmit={handleAddSTNK} initialSTNK={editingSTNK} />
-
-                <STNKList stnk={stnk} onDelete={handleDeleteSTNK} onEdit={handleEditSTNK} />
-            </VStack>
-        </Container>
-    );
+      <Row>
+        <Col md={6}>
+          <STNKForm onSubmit={handleAddSTNK} initialSTNK={editingSTNK} />
+        </Col>
+        <Col md={6}>
+          <STNKList stnkdata={stnk} onEdit={handleEditSTNK} onDelete={handleDeleteSTNK} />
+        </Col>
+      </Row>
+    </Container>
+  );
 };
 
 export default STNKPage;

@@ -25,8 +25,7 @@ export const loginAdmin = async () => {
 // Create New SIM Data
 export const logoutAdmin = async () => {
     try {
-        const response = await axios.post('/admin/logout');
-        return response.data;
+        await axios.post('/admin/logout');
     } catch (err) {
         console.log('Error logging out admin:', err);
         throw err;

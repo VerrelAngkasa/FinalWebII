@@ -1,32 +1,30 @@
-// import logo from './logo.svg';
-import './App.css';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import AdminPage from './pages/AdminPage';
 import SIMPage from './pages/SIMPage';
-// import STNKPage from './pages/STNKPage';
+import STNKPage from './pages/STNKPage';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
-  return <SIMPage />;
-  // return <STNKPage />;
-}
+  return (
+    <Router>
+      <Routes>
+        <Route path="/admin" element={<AdminPage />} />
+        <Route path="/data/sim" element={<SIMPage />} />
+        <Route path="/data/stnk" element={<STNKPage />} />
 
-// function App() {
-//   return (
-//     <div className="App">
-//       <header className="App-header">
-//         <img src={logo} className="App-logo" alt="logo" />
-//         <p>
-//           Edit <code>src/App.js</code> and save to reload.
-//         </p>
-//         <a
-//           className="App-link"
-//           href="https://reactjs.org"
-//           target="_blank"
-//           rel="noopener noreferrer"
-//         >
-//           Learn React
-//         </a>
-//       </header>
-//     </div>
-//   );
-// }
+        {/* Redirect root to /admin */}
+        <Route path="/" element={<Navigate to="/admin" />} />
+
+        {/* 404 Page */}
+        <Route path="*" element={
+          <div className="text-center mt-5">
+            <h2>404 - Page Not Found</h2>
+          </div>
+        } />
+      </Routes>
+    </Router>
+  );
+}
 
 export default App;

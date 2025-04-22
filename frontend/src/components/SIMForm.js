@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Box, TextInput, Textarea, Button, Select, Radio, Stack, Group, Title, } from '@mantine/core';
+import { Form, Button, Row, Col, InputGroup } from 'react-bootstrap';
 
-const SIMForm = ({ onSubmit, initialSIM = null }) => {
+const SIMForm = ({ onSubmit, initialSIM = null, token }) => {
     const [layanan, setLayanan] = useState('');
     const [nama, setNama] = useState('');
     const [alamat, setAlamat] = useState('');
@@ -29,7 +29,8 @@ const SIMForm = ({ onSubmit, initialSIM = null }) => {
     }, [initialSIM]);
 
     const handleSubmit = (e) => {
-        e.preeventDefault();
+        e.preventDefault();
+        // Adding token to the request headers
         onSubmit({
             layanan,
             nama,
@@ -38,9 +39,10 @@ const SIMForm = ({ onSubmit, initialSIM = null }) => {
             tahun,
             harga,
             _id: initialSIM ? initialSIM._id : undefined,
+            token: token,  // Attach token to the form data
         });
 
-        // Reset form after submission
+        // Reset form after submission if it's a new SIM entry
         if (!initialSIM) {
             setLayanan('');
             setNama('');
@@ -52,77 +54,99 @@ const SIMForm = ({ onSubmit, initialSIM = null }) => {
     };
 
     return (
-        <Box component="form" onSubmit={handleSubmit} p="md" style={{ border: '1px solid #e2e8f0', borderRadius: 8 }}>
-            <Stack spacing="md">
-                <Title order={4}>Formulir SIM</Title>
+        <Form onSubmit={handleSubmit} style={{ border: '1px solid #e2e8f0', borderRadius: 8, padding: '20px' }}>
+            <h4>{initialSIM ? 'Perbarui Data SIM' : 'Tambah Data SIM'}</h4>
 
-                <Select
-                    label="Layanan"
-                    placeholder="Pilih tipe layanan"
-                    data={[
-                        { value: 'Pembaharuan STNK', label: 'Pembaharuan STNK' },
-                        { value: 'Pembuatan SIM', label: 'Pembuatan SIM' },
-                    ]}
+            <Form.Group controlId="layanan">
+                <Form.Label>Layanan</Form.Label>
+                <Form.Control
+                    as="select"
                     value={layanan}
-                    onChange={setLayanan}
-                    required
-                />
-
-                <TextInput
-                    label="Nama"
-                    placeholder="Masukkan nama"
-                    value={nama}
-                    onChange={(e) => setNama(e.currentTarget.value)}
-                    required
-                />
-
-                <Textarea
-                    label="Alamat"
-                    placeholder="Masukkan alamat"
-                    value={alamat}
-                    onChange={(e) => setAlamat(e.currentTarget.value)}
-                    autosize
-                    minRows={2}
-                    required
-                />
-
-                <Radio.Group
-                    name="tipe"
-                    label="Tipe SIM"
-                    value={tipe}
-                    onChange={setTipe}
+                    onChange={(e) => setLayanan(e.target.value)}
                     required
                 >
-                    <Group mt="xs">
-                        <Radio value="SIM A" label="SIM A" />
-                        <Radio value="SIM B1" label="SIM B1" />
-                        <Radio value="SIM C" label="SIM C" />
-                    </Group>
-                </Radio.Group>
+                    <option value="">Pilih tipe layanan</option>
+                    <option value="Pembaharuan STNK">Pembaharuan STNK</option>
+                    <option value="Pembuatan SIM">Pembuatan SIM</option>
+                </Form.Control>
+            </Form.Group>
 
-                <TextInput
-                    label="Tahun"
-                    placeholder="Tahun pembuatan"
+            <Form.Group controlId="nama">
+                <Form.Label>Nama</Form.Label>
+                <Form.Control
+                    type="text"
+                    placeholder="Masukkan nama"
+                    value={nama}
+                    onChange={(e) => setNama(e.target.value)}
+                    required
+                />
+            </Form.Group>
+
+            <Form.Group controlId="alamat">
+                <Form.Label>Alamat</Form.Label>
+                <Form.Control
+                    as="textarea"
+                    placeholder="Masukkan alamat"
+                    value={alamat}
+                    onChange={(e) => setAlamat(e.target.value)}
+                    rows={3}
+                    required
+                />
+            </Form.Group>
+
+            <Form.Group controlId="tipe">
+                <Form.Label>Tipe SIM</Form.Label>
+                <InputGroup className="mb-3">
+                    <Form.Check
+                        type="radio"
+                        label="SIM A"
+                        value="SIM A"
+                        checked={tipe === 'SIM A'}
+                        onChange={(e) => setTipe(e.target.value)}
+                    />
+                    <Form.Check
+                        type="radio"
+                        label="SIM B1"
+                        value="SIM B1"
+                        checked={tipe === 'SIM B1'}
+                        onChange={(e) => setTipe(e.target.value)}
+                    />
+                    <Form.Check
+                        type="radio"
+                        label="SIM C"
+                        value="SIM C"
+                        checked={tipe === 'SIM C'}
+                        onChange={(e) => setTipe(e.target.value)}
+                    />
+                </InputGroup>
+            </Form.Group>
+
+            <Form.Group controlId="tahun">
+                <Form.Label>Tahun Pembuatan</Form.Label>
+                <Form.Control
                     type="number"
+                    placeholder="Masukkan tahun"
                     value={tahun}
-                    onChange={(e) => setTahun(e.currentTarget.value)}
+                    onChange={(e) => setTahun(e.target.value)}
                     required
                 />
+            </Form.Group>
 
-                <TextInput
-                    label="Harga"
-                    placeholder="Harga"
+            <Form.Group controlId="harga">
+                <Form.Label>Harga</Form.Label>
+                <Form.Control
                     type="number"
+                    placeholder="Harga"
                     value={harga}
-                    onChange={(e) => setHarga(e.currentTarget.value)}
+                    onChange={(e) => setHarga(e.target.value)}
                     required
                 />
+            </Form.Group>
 
-                <Button type="submit" fullWidth color="green">
-                    {initialSIM ? 'Perbarui Data SIM' : 'Tambah Data SIM'}
-                </Button>
-            </Stack>
-        </Box>
+            <Button variant="success" type="submit" block>
+                {initialSIM ? 'Perbarui Data SIM' : 'Tambah Data SIM'}
+            </Button>
+        </Form>
     );
 };
 

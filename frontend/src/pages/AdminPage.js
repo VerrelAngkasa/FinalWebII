@@ -1,115 +1,79 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Container, VStack, Heading, Toast } from '@chakra-ui/react';
-import STNKForm from '../components/STNKForm';
-import STNKList from '../components/STNKList';
-import * as dataSTNKService from '../services/dataSTNKService';
+import React, { useState } from 'react';
+import { Container, Row, Col, Alert, Button } from 'react-bootstrap';
+import AdminForm from '../components/AdminForm';
+import * as adminService from '../services/AdminService'; // Asumsikan kamu sudah punya service ini
 
-const STNKPage = () => {
-    const [stnk, setSTNKData] = useState([]);
-    const [editingSTNK, setEditingSTNK] = useState(null);
-    const toast = Toast();
+const AdminPage = () => {
+  const [isLogin, setIsLogin] = useState(true);
+  const [notification, setNotification] = useState(null);
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+  });
 
-    const fetchSTNKData = useCallback(async () => {
-        try {
-            const fetchedSTNKData = await dataSTNKService.getAllSTNK();
-            setSTNKData(fetchedSTNKData);
-        } catch (err) {
-            toast({
-                title: 'Error fetching STNK data',
-                status: 'error',
-                duration: 3000,
-                isClosable: true,
-            });
-        }
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
 
-    }, [toast]);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      if (isLogin) {
+        await adminService.loginAdmin(formData);  // Calls the login API path
+        setNotification({ message: 'Login successful!', variant: 'success' });
+      } else {
+        await adminService.signupAdmin(formData); // Calls the signup API path
+        setNotification({ message: 'Signup successful! You can now log in.', variant: 'success' });
+      }
+    } catch (error) {
+      setNotification({ message: error.message || 'An error occurred', variant: 'danger' });
+    }
+  };
 
-    useEffect(() => {
-        fetchSTNKData();
-    }, [fetchSTNKData]);
+  const handleLogout = async () => {
+    try {
+      await adminService.logoutAdmin();
+      setNotification({ message: 'Logout successful!', variant: 'info' });
+    } catch (error) {
+      setNotification({ message: error.message || 'An error occurred', variant: 'danger' });
+    }
+  };
 
-    const handleAddSTNK = async (stnkData) => {
-        try {
-            if (stnkData._id) {
-                const updateSTNK = await dataSTNKService.updateSTNKById(stnkData._id, {
-                    tipe: stnkData.tipe,
-                });
+  return (
+    <Container className="mt-5">
+      <Row className="justify-content-center">
+        <Col md={6}>
+          <h2 className="mb-4 text-center">{isLogin ? 'Login Admin' : 'Signup Admin'}</h2>
 
-                // Update STNK data at state
-                setSTNKData(stnk.map((stnk) => (stnk._id === stnkData._id ? updateSTNK : stnk)));
+          {notification && (
+            <Alert variant={notification.variant} onClose={() => setNotification(null)} dismissible>
+              {notification.message}
+            </Alert>
+          )}
 
-                // Reset editingSTNK state
-                setEditingSTNK(null);
+          <AdminForm
+            formData={formData}
+            onChange={handleChange}
+            onSubmit={handleSubmit}
+            isLogin={isLogin}
+          />
 
-                toast({
-                    title: 'Successfully updated STNK data',
-                    status: 'success',
-                    duration: 3000,
-                    isClosable: true,
-                });
-            } else {
-                // Proses tambah catatan baru
-                const newSTNK = await dataSTNKService.createSTNK(stnkData);
-                setSTNKData([newSTNK, ...stnk]);
-
-                toast({
-                    title: 'Successfully created new STNK data',
-                    status: 'success',
-                    duration: 3000,
-                    isClosable: true,
-                });
-            }
-        } catch (err) {
-            toast({
-                title: "Error handling STNK data",
-                status: "error",
-                duration: 3000,
-                isClosable: true,
-            });
-        }
-    };
-
-    const handleDeleteSTNK = async (id) => {
-        try {
-            await dataSTNKService.deleteSTNKById(id);
-            setSTNKData(stnk.filter((stnk) => stnk._id !== id));
-
-            // Reset editing STNK if STNK data is being deleted
-            if (editingSTNK && editingSTNK._id === id) {
-                setEditingSTNK(null);
-            }
-
-            toast({
-                title: 'Successfully deleted STNK data',
-                status: 'success',
-                duration: 3000,
-                isClosable: true,
-            });
-        } catch (err) {
-            toast({
-                title: 'Error deleting STNK data',
-                status: 'error',
-                duration: 3000,
-                isClosable: true,
-            });
-        }
-    };
-
-    const handleEditSTNK = (stnk) => {
-        setEditingSTNK(stnk);
-    };
-
-    return (
-        <Container maxW = 'container.md' py={8}>
-            <VStack spacing = {8} width = 'full'>
-                <Heading>Pembaharuan STNK Sumatra Jaya Abadi</Heading>
-
-                <STNKForm onSubmit={handleAddSTNK} initialSTNK={editingSTNK} />
-
-                <STNKList stnk={stnk} onDelete={handleDeleteSTNK} onEdit={handleEditSTNK} />
-            </VStack>
-        </Container>
-    );
+          <div className="d-flex justify-content-between mt-3">
+            <Button variant="outline-secondary" onClick={() => setIsLogin((prev) => !prev)}>
+              Switch to {isLogin ? 'Signup' : 'Login'}
+            </Button>
+            <Button variant="outline-danger" onClick={handleLogout}>
+              Logout
+            </Button>
+          </div>
+        </Col>
+      </Row>
+    </Container>
+  );
 };
 
-export default STNKPage;
+export default AdminPage;

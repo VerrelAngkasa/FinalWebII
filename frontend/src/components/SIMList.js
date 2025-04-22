@@ -1,29 +1,38 @@
 import React from 'react';
-import { Box, Stack, Title, Text, ActionIcon, Group, Paper } from '@mantine/core';
+import { Card, Button, Row, Col, Stack } from 'react-bootstrap';
 import { IconEdit, IconTrash } from '@tabler/icons-react';
 
 const SIMList = ({ simdata, onDelete, onEdit }) => {
   return (
-    <Stack spacing="md" w="100%">
+    <Stack gap={3}>
       {simdata.map((sim) => (
-        <Paper key={sim._id} withBorder shadow="sm" p="md" radius="md" bg="yellow.1">
-          <Group position="apart" align="flex-start">
-            <Box style={{ flex: 1 }}>
-              <Title order={4} mb="xs">
-                {simdata.layanan}
-              </Title>
-              <Text>{simdata.content}</Text>
-            </Box>
-            <Group spacing="xs">
-              <ActionIcon color="blue" variant="outline" onClick={() => onEdit(simdata)}>
-                <IconEdit size={18} />
-              </ActionIcon>
-              <ActionIcon color="red" variant="outline" onClick={() => onDelete(simdata._id)}>
-                <IconTrash size={18} />
-              </ActionIcon>
-            </Group>
-          </Group>
-        </Paper>
+        <Card key={sim._id} border="light" style={{ width: '100%' }}>
+          <Card.Body>
+            <Row className="d-flex align-items-start">
+              <Col xs={8}>
+                <Card.Title>{sim.layanan}</Card.Title>
+                <Card.Text>{sim.content}</Card.Text>
+              </Col>
+              <Col xs={4} className="d-flex justify-content-end">
+                <Button
+                  variant="outline-primary"
+                  size="sm"
+                  className="me-2"
+                  onClick={() => onEdit(sim)}  // Passing the entire SIM object
+                >
+                  <IconEdit size={18} />
+                </Button>
+                <Button
+                  variant="outline-danger"
+                  size="sm"
+                  onClick={() => onDelete(sim._id)}  // Passing the SIM ID to delete
+                >
+                  <IconTrash size={18} />
+                </Button>
+              </Col>
+            </Row>
+          </Card.Body>
+        </Card>
       ))}
     </Stack>
   );
