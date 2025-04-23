@@ -1,10 +1,10 @@
-// Frontedn HTTP Request Service
+// Frontend HTTP Request Service
 import axios from 'axios';
 
 // Get All SIM Data
-export const signupAdmin = async () => {
+export const signupAdmin = async ({ name, email, password }) => {
     try {
-        const response = await axios.post('/admin/signup');
+        const response = await axios.post('/admin/signup', { name, email, password });
         return response.data;
     } catch (err) {
         console.log('Error creating new admin:', err);
@@ -13,9 +13,9 @@ export const signupAdmin = async () => {
 };
 
 // Get SIM Data by ID
-export const loginAdmin = async () => {
+export const loginAdmin = async ({ email, password }) => {
     try {
-        const response = await axios.post(`/admin/login`);
+        const response = await axios.post(`/admin/login`, { email, password });
         return response.data;
     } catch (err) {
         console.log(`Error loggin admin: `, err)
