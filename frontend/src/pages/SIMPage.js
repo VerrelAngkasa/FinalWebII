@@ -1,119 +1,113 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Container, Row, Col, Button, Alert } from 'react-bootstrap';
-import { showNotification } from '@mantine/notifications'; // Keep this if you want to use Mantine notifications
-import SIMForm from '../components/SIMForm';
-import SIMList from '../components/SIMList';
-import * as dataSIMService from '../services/SIMService';
+import React, { useEffect, useState } from 'react';
+import { Table, Button, Modal, Form, Container, Alert } from 'react-bootstrap';
+import { getAllSIM, getSIMById, updateSIMById, deleteSIMById } from '../services/SIMService';
 
 const SIMPage = () => {
-  const [sim, setSIMData] = useState([]);
-  const [editingSIM, setEditingSIM] = useState(null);
-  const [error, setError] = useState(null);
+  const [data, setData] = useState([]);
+  const [selectedSIM, setSelectedSIM] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [updatedTipe, setUpdatedTipe] = useState('');
+  const [alert, setAlert] = useState(null);
 
-  const fetchSIMData = useCallback(async () => {
+  const fetchData = async () => {
     try {
-      const fetchedSIMData = await dataSIMService.getAllSIM();
-      setSIMData(fetchedSIMData);
+      const result = await getAllSIM();
+      setData(result);
     } catch (err) {
-      setError(err.message || 'Error fetching SIM data');
+      setAlert('Gagal memuat data SIM.');
     }
-  }, []);
+  };
 
   useEffect(() => {
-    fetchSIMData();
-  }, [fetchSIMData]);
+    fetchData();
+  }, []);
 
-  const handleAddSIM = async (simData) => {
+  const handleEdit = async (id) => {
     try {
-      if (simData._id) {
-        const updatedSIM = await dataSIMService.updateSIMById(simData._id, {
-          tipe: simData.tipe,
-        });
-        setSIMData(sim.map((s) => (s._id === simData._id ? updatedSIM : s)));
-        setEditingSIM(null);
-
-        showNotification({
-          title: 'Successfully updated',
-          message: 'SIM data updated.',
-          color: 'green',
-        });
-      } else {
-        const newSIM = await dataSIMService.createSIM(simData);
-        setSIMData([newSIM, ...sim]);
-
-        showNotification({
-          title: 'Successfully added',
-          message: 'New SIM data added.',
-          color: 'green',
-        });
-      }
+      const sim = await getSIMById(id);
+      setSelectedSIM(sim);
+      setUpdatedTipe(sim.tipe);
+      setShowModal(true);
     } catch (err) {
-      setError(err.message || 'Failed to add or update SIM data.');
-      showNotification({
-        title: 'Error',
-        message: err.message || 'Failed to add or update SIM data.',
-        color: 'red',
-      });
+      setAlert('Gagal mengambil data SIM.');
     }
   };
 
-  const handleDeleteSIM = async (id) => {
+  const handleUpdate = async () => {
     try {
-      await dataSIMService.deleteSIMById(id);
-      setSIMData(sim.filter((s) => s._id !== id));
-
-      if (editingSIM && editingSIM._id === id) {
-        setEditingSIM(null);
-      }
-
-      showNotification({
-        title: 'Successfully deleted',
-        message: 'SIM data deleted.',
-        color: 'green',
-      });
+      await updateSIMById(selectedSIM._id, { tipe: updatedTipe });
+      setShowModal(false);
+      fetchData();
     } catch (err) {
-      setError(err.message || 'Failed to delete SIM data.');
-      showNotification({
-        title: 'Error',
-        message: err.message || 'Failed to delete SIM data.',
-        color: 'red',
-      });
+      setAlert('Gagal memperbarui data SIM.');
     }
   };
 
-  const handleEditSIM = async (sim) => {
-    setEditingSIM(sim);
+  const handleDelete = async (id) => {
     try {
-      const simData = await dataSIMService.getSIMById(sim._id); // Fetch data by ID for editing
-      setEditingSIM(simData);
+      await deleteSIMById(id);
+      fetchData();
     } catch (err) {
-      setError(err.message || 'Error fetching SIM data for editing');
-      showNotification({
-        title: 'Error',
-        message: err.message || 'Failed to fetch SIM data for editing.',
-        color: 'red',
-      });
+      setAlert('Gagal menghapus data SIM.');
     }
   };
 
   return (
-    <Container className="mt-5">
-      {error && (
-        <Alert variant="danger">
-          {error}
-        </Alert>
-      )}
-      <Row>
-        <Col>
-          <h2 className="mb-4">Pembuatan SIM | Sumatra Jaya Abadi</h2>
-          <SIMForm onSubmit={handleAddSIM} initialSIM={editingSIM} />
-        </Col>
-      </Row>
-      <Row>
-        <Col>
-          <SIMList sim={sim} onDelete={handleDeleteSIM} onEdit={handleEditSIM} />
-        </Col>
-      </Row>
+    <Container className="mt-4">
+      <h3 className="text-center mb-4">Data Pembuatan SIM</h3>
+      {alert && <Alert variant="danger">{alert}</Alert>}
+      <Table striped bordered hover responsive>
+        <thead>
+          <tr>
+            <th>Nama</th>
+            <th>Tipe</th>
+            <th>Tahun</th>
+            <th>Harga</th>
+            <th>Updated At</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.map((sim) => (
+            <tr key={sim.id}>
+              <td>{sim.nama}</td>
+              <td>{sim.tipe}</td>
+              <td>{sim.tahun}</td>
+              <td>{sim.harga}</td>
+              <td>{new Date(sim.updatedAt).toLocaleString()}</td>
+              <td>
+                <Button variant="warning" size="sm" onClick={() => handleEdit(sim.id)}>Edit</Button>{' '}
+                <Button variant="danger" size="sm" onClick={() => handleDelete(sim.id)}>Hapus</Button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </Table>
+
+      {/* Modal Edit */}
+      <Modal show={showModal} onHide={() => setShowModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Edit Tipe SIM</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form.Group>
+            <Form.Label>Tipe</Form.Label>
+            <Form.Control
+              as="select"
+              value={updatedTipe}
+              onChange={(e) => setUpdatedTipe(e.target.value)}
+            >
+              <option value="SIM A">SIM A</option>
+              <option value="SIM B1">SIM B1</option>
+              <option value="SIM C">SIM C</option>
+            </Form.Control>
+          </Form.Group>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowModal(false)}>Batal</Button>
+          <Button variant="primary" onClick={handleUpdate}>Simpan</Button>
+        </Modal.Footer>
+      </Modal>
     </Container>
   );
 };

@@ -1,91 +1,109 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Container, Row, Col, Alert } from 'react-bootstrap';
-import STNKForm from '../components/STNKForm';
-import STNKList from '../components/STNKList';
-import * as dataSTNKService from '../services/STNKService';
+import React, { useEffect, useState } from 'react';
+import { Table, Button, Modal, Form, Container, Alert } from 'react-bootstrap';
+import { getAllSTNK, getSTNKById, updateSTNKById, deleteSTNKById } from '../services/STNKService';
 
 const STNKPage = () => {
-  const [stnk, setSTNKData] = useState([]);
-  const [editingSTNK, setEditingSTNK] = useState(null);
+  const [data, setData] = useState([]);
+  const [selectedSTNK, setSelectedSTNK] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [updatedPlat, setUpdatedPlat] = useState('');
   const [alert, setAlert] = useState(null);
 
-  const fetchSTNKData = useCallback(async () => {
+  const fetchData = async () => {
     try {
-      const fetchedSTNKData = await dataSTNKService.getAllSTNK();
-      setSTNKData(fetchedSTNKData);
+      const result = await getAllSTNK();
+      setData(result);
     } catch (err) {
-      setAlert({ type: 'danger', message: 'Gagal memuat data STNK' });
+      setAlert('Gagal memuat data STNK.');
     }
-  }, []);
+  };
 
   useEffect(() => {
-    fetchSTNKData();
-  }, [fetchSTNKData]);
+    fetchData();
+  }, []);
 
-  const handleAddSTNK = async (stnkData) => {
+  const handleEdit = async (id) => {
     try {
-      if (stnkData._id) {
-        const updated = await dataSTNKService.updateSTNKById(stnkData._id, stnkData);
-        setSTNKData((prev) =>
-          prev.map((s) => (s._id === stnkData._id ? updated : s))
-        );
-        setAlert({ type: 'success', message: 'Data STNK berhasil diperbarui' });
-      } else {
-        const created = await dataSTNKService.createSTNK(stnkData);
-        setSTNKData((prev) => [created, ...prev]);
-        setAlert({ type: 'success', message: 'Data STNK berhasil ditambahkan' });
-      }
-      setEditingSTNK(null);
+      const stnk = await getSTNKById(id);
+      setSelectedSTNK(stnk);
+      setUpdatedPlat(stnk.nomor_plat);
+      setShowModal(true);
     } catch (err) {
-      setAlert({ type: 'danger', message: 'Gagal memproses data STNK' });
+      setAlert('Gagal mengambil data STNK.');
     }
   };
 
-  const handleDeleteSTNK = async (id) => {
+  const handleUpdate = async () => {
     try {
-      await dataSTNKService.deleteSTNKById(id);
-      setSTNKData((prev) => prev.filter((s) => s._id !== id));
-      setAlert({ type: 'success', message: 'Data STNK berhasil dihapus' });
-
-      if (editingSTNK && editingSTNK._id === id) {
-        setEditingSTNK(null);
-      }
+      await updateSTNKById(selectedSTNK._id, { nomor_plat: updatedPlat });
+      setShowModal(false);
+      fetchData();
     } catch (err) {
-      setAlert({ type: 'danger', message: 'Gagal menghapus data STNK' });
+      setAlert('Gagal memperbarui data STNK.');
     }
   };
 
-  const handleEditSTNK = async (stnk) => {
+  const handleDelete = async (id) => {
     try {
-      const data = await dataSTNKService.getSTNKById(stnk._id);
-      setEditingSTNK(data);
+      await deleteSTNKById(id);
+      fetchData();
     } catch (err) {
-      setAlert({ type: 'danger', message: 'Gagal memuat detail data STNK' });
+      setAlert('Gagal menghapus data STNK.');
     }
   };
 
   return (
-    <Container className="py-4">
-      <h2 className="mb-4 text-center">Pembaharuan STNK | Sumatra Jaya Abadi</h2>
+    <Container className="mt-4">
+      <h3 className="text-center mb-4">Data Pembaharuan STNK</h3>
+      {alert && <Alert variant="danger">{alert}</Alert>}
+      <Table striped bordered hover responsive>
+        <thead>
+          <tr>
+            <th>Nomor Plat</th>
+            <th>Nama</th>
+            <th>Tahun</th>
+            <th>Harga</th>
+            <th>Updated At</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.map((stnk) => (
+            <tr key={stnk.id}>
+              <td>{stnk.nomor_plat}</td>
+              <td>{stnk.nama}</td>
+              <td>{stnk.tahun}</td>
+              <td>{stnk.harga}</td>
+              <td>{new Date(stnk.updatedAt).toLocaleString()}</td>
+              <td>
+                <Button variant="warning" size="sm" onClick={() => handleEdit(stnk.id)}>Edit</Button>{' '}
+                <Button variant="danger" size="sm" onClick={() => handleDelete(stnk.id)}>Hapus</Button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </Table>
 
-      {alert && (
-        <Alert
-          variant={alert.type}
-          dismissible
-          onClose={() => setAlert(null)}
-        >
-          {alert.message}
-        </Alert>
-      )}
-
-      <Row>
-        <Col md={6}>
-          <STNKForm onSubmit={handleAddSTNK} initialSTNK={editingSTNK} />
-        </Col>
-        <Col md={6}>
-          <STNKList stnkdata={stnk} onEdit={handleEditSTNK} onDelete={handleDeleteSTNK} />
-        </Col>
-      </Row>
+      {/* Modal Edit */}
+      <Modal show={showModal} onHide={() => setShowModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Edit Nomor Plat</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form.Group>
+            <Form.Label>Nomor Plat</Form.Label>
+            <Form.Control
+              type="text"
+              value={updatedPlat}
+              onChange={(e) => setUpdatedPlat(e.target.value)}
+            />
+          </Form.Group>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowModal(false)}>Batal</Button>
+          <Button variant="primary" onClick={handleUpdate}>Simpan</Button>
+        </Modal.Footer>
+      </Modal>
     </Container>
   );
 };

@@ -1,9 +1,11 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
+import LoginPage from './pages/LoginPage';
 import LogoutPage from './pages/LogoutPage.js';
 import DashboardPage from './pages/DashboardPage.js';
+import SIMPage from './pages/SIMPage.js';
+import STNKPage from './pages/STNKPage.js';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
@@ -15,7 +17,8 @@ function App() {
         <Route path="/admin/signup" element={<SignupPage />} />
         <Route path="/admin/logout" element={<LogoutPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
-        {/* Add other routes here */}
+        <Route path="/data/sim" element={<SIMPage />} />
+        <Route path="/data/stnk" element={<STNKPage />} />
         
         {/* 404 Page Not Found */}
 
