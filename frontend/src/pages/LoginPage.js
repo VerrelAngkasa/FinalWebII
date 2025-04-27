@@ -15,7 +15,7 @@ const LoginPage = () => {
       const response = await loginAdmin({ email, password });
 
       if (response && response.token) {
-        // ✅ Simpan token JWT ke localStorage
+        // Simpan token JWT ke localStorage
         localStorage.setItem('jwtToken', response.token);
 
         // Navigasi ke dashboard setelah login sukses

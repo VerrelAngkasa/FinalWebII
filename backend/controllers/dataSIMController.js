@@ -50,7 +50,7 @@ exports.getAllSIM = async (req, res) => {
 };
 
 exports.getSIMById = async (req, res) => {
-  const id = req.query.id;
+  const id = req.params;
   try {
     const sim = await SIM.findById(id);
 
@@ -65,7 +65,7 @@ exports.getSIMById = async (req, res) => {
 
 // Update SIM
 exports.updateSIMById = async (req, res) => {
-  const id = req.query.id;
+  const id = req.params;
   const { tipe } = req.body;
   try {
     if (!tipe) {
@@ -87,7 +87,7 @@ exports.updateSIMById = async (req, res) => {
 
 // Delete SIM
 exports.deleteSIMById = async (req, res) => {
-  const id = req.query.id;
+  const id = req.params;
   try {
     await SIM.findByIdAndDelete(id);
     res.status(200).json({ message: `SIM ${id} deleted successfully` });
