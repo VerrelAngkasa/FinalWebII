@@ -13,14 +13,19 @@ const LoginPage = () => {
     e.preventDefault();
     try {
       const response = await loginAdmin({ email, password });
-      if (response && response.token) { 
+
+      if (response && response.token) {
+        // ✅ Simpan token JWT ke localStorage
+        localStorage.setItem('jwtToken', response.token);
+
+        // Navigasi ke dashboard setelah login sukses
         navigate('/dashboard');
       } else {
         setAlert('Login gagal. Periksa kembali email dan password.');
       }
     } catch (err) {
       setAlert('Login gagal. Periksa kembali email dan password.');
-    }  
+    }
   };
 
   return (
@@ -32,12 +37,24 @@ const LoginPage = () => {
           <Form onSubmit={handleLogin}>
             <Form.Group className="mb-3" controlId="email">
               <Form.Label>Email</Form.Label>
-              <Form.Control type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder='Enter your email' />
+              <Form.Control
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter your email"
+              />
             </Form.Group>
 
             <Form.Group className="mb-3" controlId="password">
               <Form.Label>Password</Form.Label>
-              <Form.Control type="password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder='Enter your password' />
+              <Form.Control
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter your password"
+              />
             </Form.Group>
 
             <Button variant="primary" type="submit" className="w-100">

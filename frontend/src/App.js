@@ -6,6 +6,7 @@ import LogoutPage from './pages/LogoutPage.js';
 import DashboardPage from './pages/DashboardPage.js';
 import SIMPage from './pages/SIMPage.js';
 import STNKPage from './pages/STNKPage.js';
+import NotFoundPage from './pages/NotFoundPage.js';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
@@ -19,8 +20,8 @@ function App() {
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/data/sim" element={<SIMPage />} />
         <Route path="/data/stnk" element={<STNKPage />} />
+        <Route path='/unauthorized' element={<NotFoundPage />} />
         
-        {/* 404 Page Not Found */}
 
         <Route path="*" element={
           <div className="text-center mt-5">

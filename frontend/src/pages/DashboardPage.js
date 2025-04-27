@@ -1,9 +1,30 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Card, Container, Row, Col } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+
+const getAuthToken = () => localStorage.getItem('jwtToken');
+
+const setAuthHeader = () => {
+  const token = getAuthToken();
+  if (token) {
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+  } else {
+    delete axios.defaults.headers.common['Authorization'];
+  }
+};
 
 const DashboardPage = () => {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = getAuthToken();
+    if (!token) {
+      navigate('/unauthorized'); // 🚫 Redirect kalau tidak ada token
+    } else {
+      setAuthHeader(); // ✅ Set token kalau ada
+    }
+  }, [navigate]);
 
   const services = [
     {
