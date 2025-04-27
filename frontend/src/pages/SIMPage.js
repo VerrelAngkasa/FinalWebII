@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Container, Row, Col, Modal, Button, Form, Alert } from 'react-bootstrap';
+import { Card, Container, Row, Col, Modal, Button, Form, Alert, Badge } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { getAllSIM, createSIM, getSIMById, updateSIMById, deleteSIMById } from '../services/SIMService';
 import { BsArrowLeft } from 'react-icons/bs';
@@ -25,15 +25,40 @@ const SIMPage = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedSIM, setSelectedSIM] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [notification, setNotification] = useState({ show: false, message: '' });
   const [formData, setFormData] = useState({
     layanan: 'Pembuatan SIM',
     nama: '',
     alamat: '',
     tipe: 'SIM A',
     tahun: new Date().getFullYear(),
-    harga: 0
+    harga: 0,
+    status: 'Pending'
   });
-  const [alert, setAlert] = useState(null);
+
+  const showNotification = (message) => {
+    setNotification({ show: true, message });
+    setTimeout(() => {
+      setNotification({ show: false, message: '' });
+    }, 3000);
+  };
+
+  const tipeSIM = ['SIM A', 'SIM B1', 'SIM C'];
+
+  const STATUS_COLORS = {
+    'Pending': 'warning',
+    'In Progress': 'info',
+    'Done': 'success'
+  };
+
+  // Add this after your STATUS_COLORS constant
+  const STATUS_PRIORITY = {
+    'Pending': 1,
+    'In Progress': 2,
+    'Done': 3
+  };
+
+  const STATUS_OPTIONS = ['Pending', 'In Progress', 'Done'];
 
   useEffect(() => {
     const checkToken = async () => {
@@ -44,20 +69,27 @@ const SIMPage = () => {
         setAuthHeader();
       }
     };
-
     checkToken();
   }, []);
-
-  const tipeSIM = ['SIM A', 'SIM B1', 'SIM C'];
 
   const fetchData = async () => {
     try {
       const result = await getAllSIM();
-      console.log('Fetched data:', result);
-      setData(result);
+      // Sort data based on status priority
+      const sortedData = result.sort((a, b) => {
+        // First sort by status priority
+        const statusCompare = STATUS_PRIORITY[a.status] - STATUS_PRIORITY[b.status];
+        if (statusCompare !== 0) return statusCompare;
+        
+        // If status is same, sort by creation date (newest first)
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      });
+      
+      console.log('Fetched and sorted data:', sortedData);
+      setData(sortedData);
     } catch (err) {
       console.error('Error fetching data:', err);
-      setAlert('Gagal memuat data SIM.');
+      showNotification('Gagal memuat data SIM.');
     }
   };
 
@@ -67,7 +99,7 @@ const SIMPage = () => {
 
   const validateForm = () => {
     if (!formData.nama || !formData.alamat || formData.harga <= 0) {
-      setAlert('Semua field harus diisi dengan benar');
+      showNotification('Semua field harus diisi dengan benar');
       return false;
     }
     return true;
@@ -83,10 +115,7 @@ const SIMPage = () => {
         tahun: Number(formData.tahun)
       };
 
-      console.log('Sending data:', dataToSend);
-      const response = await createSIM(dataToSend);
-      console.log('Create response:', response);
-
+      await createSIM(dataToSend);
       setShowCreateModal(false);
       setFormData({
         layanan: 'Pembuatan SIM',
@@ -94,14 +123,14 @@ const SIMPage = () => {
         alamat: '',
         tipe: 'SIM A',
         tahun: new Date().getFullYear(),
-        harga: 0
+        harga: 0,
+        status: 'Pending'
       });
-
       await fetchData();
-      setAlert('Data SIM berhasil ditambahkan');
+      showNotification('Data SIM berhasil ditambahkan');
     } catch (err) {
       console.error('Error creating SIM:', err);
-      setAlert('Gagal menambahkan data SIM.');
+      showNotification('Gagal menambahkan data SIM.');
     }
   };
 
@@ -109,19 +138,19 @@ const SIMPage = () => {
     try {
       console.log('Fetching detail for ID:', id);
       if (!id) {
-        setAlert('ID SIM tidak valid');
+        showNotification('ID SIM tidak valid');
         return;
       }
       const sim = await getSIMById(id);
       if (!sim) {
-        setAlert('Data SIM tidak ditemukan');
+        showNotification('Data SIM tidak ditemukan');
         return;
       }
       setSelectedSIM(sim);
       setShowDetailModal(true);
     } catch (err) {
       console.error('Error fetching detail:', err);
-      setAlert('Gagal memuat detail SIM');
+      showNotification('Gagal memuat detail SIM');
     }
   };
 
@@ -129,44 +158,50 @@ const SIMPage = () => {
     try {
       console.log('Fetching data for edit, ID:', id);
       if (!id) {
-        setAlert('ID SIM tidak valid');
+        showNotification('ID SIM tidak valid');
         return;
       }
       const sim = await getSIMById(id);
       if (!sim) {
-        setAlert('Data SIM tidak ditemukan');
+        showNotification('Data SIM tidak ditemukan');
         return;
       }
       setSelectedSIM(sim);
-      setFormData({ ...formData, tipe: sim.tipe });
+      setFormData({
+        ...formData,
+        tipe: sim.tipe,
+        status: sim.status
+      });
       setShowEditModal(true);
     } catch (err) {
       console.error('Error fetching data for edit:', err);
-      setAlert('Gagal memuat data untuk edit');
+      showNotification('Gagal memuat data untuk edit');
     }
   };
 
   const handleUpdateSIM = async () => {
     try {
       if (!selectedSIM?._id) {
-        setAlert('ID SIM tidak valid');
+        showNotification('ID SIM tidak valid');
         return;
       }
-      console.log('Updating SIM with ID:', selectedSIM._id);
-      await updateSIMById(selectedSIM._id, { tipe: formData.tipe });
+      await updateSIMById(selectedSIM._id, {
+        tipe: formData.tipe,
+        status: formData.status
+      });
       setShowEditModal(false);
       await fetchData();
-      setAlert('Data SIM berhasil diperbarui');
+      showNotification('Data SIM berhasil diperbarui');
     } catch (err) {
       console.error('Error updating:', err);
-      setAlert('Gagal memperbarui data SIM');
+      showNotification('Gagal memperbarui data SIM');
     }
   };
 
   const handleDeleteClick = (sim) => {
-    console.log('SIM to delete:', sim); // Debug log
     if (!sim || !sim._id) {
-      setAlert('ID SIM tidak valid');
+      console.error('Missing SIM id:', sim);
+      showNotification('ID SIM tidak valid');
       return;
     }
     setSelectedSIM(sim);
@@ -176,18 +211,17 @@ const SIMPage = () => {
   const handleDeleteConfirm = async () => {
     try {
       if (!selectedSIM || !selectedSIM._id) {
-        setAlert('ID SIM tidak valid');
+        console.error('Missing selectedSIM _id:', selectedSIM);
+        showNotification('ID SIM tidak valid');
         return;
       }
-
-      console.log('Deleting SIM with ID:', selectedSIM._id); // Debug log
       await deleteSIMById(selectedSIM._id);
       setShowDeleteModal(false);
       await fetchData();
-      setAlert('Data SIM berhasil dihapus');
+      showNotification('Data SIM berhasil dihapus');
     } catch (err) {
       console.error('Error deleting:', err);
-      setAlert('Gagal menghapus data SIM');
+      showNotification('Gagal menghapus data SIM');
     }
   };
 
@@ -202,70 +236,90 @@ const SIMPage = () => {
           >
             <BsArrowLeft size={24} />
           </Button>
-          <h2 className="mb-0">Data SIM</h2>
+          <h2 className="mb-0">Data Pembuatan SIM | Sumatra Jaya Abadi</h2>
         </div>
         <Button variant="primary" onClick={() => setShowCreateModal(true)}>
-          Tambah SIM
+          + Tambah Data
         </Button>
       </div>
 
-      {alert && (
-        <Alert
-          variant="info"
-          dismissible
-          onClose={() => setAlert(null)}
-          className="mb-4"
-        >
-          {alert}
-        </Alert>
-      )}
+      <Modal
+        show={notification.show}
+        onHide={() => setNotification({ show: false, message: '' })}
+        centered
+        size="sm"
+      >
+        <Modal.Body className="text-center py-4">
+          {notification.message}
+        </Modal.Body>
+      </Modal>
 
       <Row className="g-4">
-        {data.map((sim) => (
-          <Col key={sim.id} lg={4} md={6}>
-            <Card className="h-100 shadow-sm">
-              <Card.Body>
-                <Card.Title className="d-flex justify-content-between">
-                  <span>{sim.nama}</span>
-                  <small className="text-muted">{sim.tipe}</small>
-                </Card.Title>
-                <Card.Text>
-                  <p className="mb-1"><strong>Alamat:</strong> {sim.alamat}</p>
-                  <p className="mb-1"><strong>Tahun:</strong> {sim.tahun}</p>
-                  <p className="mb-1">
-                    <strong>Harga:</strong> Rp {sim.harga?.toLocaleString('id-ID')}
-                  </p>
-                </Card.Text>
-                <div className="d-flex gap-2 mt-3">
-                  <Button
-                    size="sm"
-                    variant="info"
-                    onClick={() => handleDetailClick(sim.id)}
-                  >
-                    Detail
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="warning"
-                    onClick={() => handleEditClick(sim.id)}
-                  >
-                    Edit Tipe
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="danger"
-                    onClick={() => handleDeleteClick(sim)} // Pass the entire sim object
-                  >
-                    Hapus
-                  </Button>
-                </div>
-              </Card.Body>
-            </Card>
+        {data.length === 0 ? (
+          <Col xs={12}>
+            <Alert variant="info" className="text-center">
+              Belum ada data Pembuatan SIM
+            </Alert>
           </Col>
-        ))}
+        ) : (
+          data.map((sim) => (
+            <Col key={sim._id} lg={3} md={6}>
+              <Card className="h-100 shadow-sm">
+                <Card.Body>
+                  <Card.Title className="d-flex justify-content-between align-items-center mb-3">
+                    <span className="text-truncate">{sim.nama}</span>
+                    <small className="text-muted">{sim.tipe}</small>
+                  </Card.Title>
+                  <div className="mb-3">
+                    <div className="mb-2">
+                      <strong>Alamat:</strong>{' '}
+                      <span className="text-wrap">{sim.alamat}</span>
+                    </div>
+                    <div className="mb-2">
+                      <strong>Tahun:</strong>{' '}
+                      {sim.tahun}
+                    </div>
+                    <div className="mb-2">
+                      <strong>Harga:</strong>{' '}
+                      Rp {sim.harga?.toLocaleString('id-ID')}
+                    </div>
+                    <div className="mb-2">
+                      <strong>Status:</strong>{' '}
+                      <Badge bg={STATUS_COLORS[sim.status]}>
+                        {sim.status}
+                      </Badge>
+                    </div>
+                  </div>
+                  <div className="d-flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="info"
+                      onClick={() => handleDetailClick(sim._id)}  // Changed from sim.id to sim._id
+                    >
+                      Detail
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="warning"
+                      onClick={() => handleEditClick(sim._id)}  // Changed from sim.id to sim._id
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="danger"
+                      onClick={() => handleDeleteClick(sim)}
+                    >
+                      Hapus
+                    </Button>
+                  </div>
+                </Card.Body>
+              </Card>
+            </Col>
+          ))
+        )}
       </Row>
 
-      {/* Modal Error */}
       <Modal show={showModal} onHide={() => navigate('/admin/login')} centered>
         <Modal.Header closeButton>
           <Modal.Title>Error: Unauthorized</Modal.Title>
@@ -280,7 +334,6 @@ const SIMPage = () => {
         </Modal.Footer>
       </Modal>
 
-      {/* Create Modal */}
       <Modal show={showCreateModal} onHide={() => setShowCreateModal(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Tambah Data SIM</Modal.Title>
@@ -347,7 +400,6 @@ const SIMPage = () => {
         </Modal.Footer>
       </Modal>
 
-      {/* Detail Modal */}
       <Modal show={showDetailModal} onHide={() => setShowDetailModal(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Detail SIM</Modal.Title>
@@ -361,6 +413,12 @@ const SIMPage = () => {
               <p><strong>Tipe SIM:</strong> {selectedSIM.tipe}</p>
               <p><strong>Tahun:</strong> {selectedSIM.tahun}</p>
               <p><strong>Harga:</strong> Rp {selectedSIM.harga?.toLocaleString('id-ID')}</p>
+              <p>
+                <strong>Status:</strong>{' '}
+                <Badge bg={STATUS_COLORS[selectedSIM.status]}>
+                  {selectedSIM.status}
+                </Badge>
+              </p>
               <p><strong>Dibuat:</strong> {new Date(selectedSIM.createdAt).toLocaleString()}</p>
               <p><strong>Diperbarui:</strong> {new Date(selectedSIM.updatedAt).toLocaleString()}</p>
             </div>
@@ -373,10 +431,9 @@ const SIMPage = () => {
         </Modal.Footer>
       </Modal>
 
-      {/* Edit Modal */}
       <Modal show={showEditModal} onHide={() => setShowEditModal(false)}>
         <Modal.Header closeButton>
-          <Modal.Title>Edit Tipe SIM</Modal.Title>
+          <Modal.Title>Edit Data SIM</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form>
@@ -388,6 +445,17 @@ const SIMPage = () => {
               >
                 {tipeSIM.map((tipe) => (
                   <option key={tipe} value={tipe}>{tipe}</option>
+                ))}
+              </Form.Select>
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Status</Form.Label>
+              <Form.Select
+                value={formData.status}
+                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+              >
+                {STATUS_OPTIONS.map((status) => (
+                  <option key={status} value={status}>{status}</option>
                 ))}
               </Form.Select>
             </Form.Group>
@@ -403,7 +471,6 @@ const SIMPage = () => {
         </Modal.Footer>
       </Modal>
 
-      {/* Delete Modal */}
       <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Konfirmasi Hapus</Modal.Title>

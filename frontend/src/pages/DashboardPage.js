@@ -3,6 +3,40 @@ import { Card, Container, Row, Col, Modal, Button } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { logoutAdmin } from '../services/AdminService';
+import { FaIdCard, FaCarAlt } from 'react-icons/fa';
+import styled from 'styled-components';
+
+const StyledDashboard = styled.div`
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+`;
+
+const StyledCard = styled(Card)`
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none !important;
+  border-radius: 15px !important;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+  }
+`;
+
+const ServiceIcon = styled.div`
+  color: #3498db;
+  margin-bottom: 1rem;
+  font-size: 2.5rem;
+`;
+
+const DashboardTitle = styled.h2`
+  color: #2c3e50;
+  font-weight: bold;
+  margin-bottom: 0;
+`;
 
 const getAuthToken = () => localStorage.getItem('jwtToken');
 
@@ -48,36 +82,49 @@ const DashboardPage = () => {
       title: 'Pembaharuan STNK',
       route: '/data/stnk',
       description: 'Kelola data pembaruan STNK dari pelanggan.',
+      icon: <FaCarAlt size={40} className="mb-3 text-primary" />
     },
     {
       title: 'Pembuatan SIM',
       route: '/data/sim',
       description: 'Lihat dan kelola data pembuatan SIM.',
+      icon: <FaIdCard size={40} className="mb-3 text-primary" />
     },
   ];
 
   return (
-    <>
-      <Container className="mt-5">
-        <div className="d-flex justify-content-between align-items-center mb-4">
-          <h2>Pilih Layanan</h2>
-          <Button variant="danger" onClick={() => setShowLogoutModal(true)}>
+    <StyledDashboard>
+      <Container className="py-5 flex-grow-1">
+        <div className="d-flex justify-content-between align-items-center mb-5">
+          <DashboardTitle>Dashboard Admin</DashboardTitle>
+          <Button
+            variant="danger"
+            onClick={() => setShowLogoutModal(true)}
+            className="px-4 py-2"
+          >
             Logout
           </Button>
         </div>
-        <Row className="justify-content-center">
+
+        <Row className="justify-content-center align-items-center" style={{ minHeight: '60vh' }}>
           {services.map((service, index) => (
-            <Col key={index} md={5} className="mb-4">
-              <Card 
-                onClick={() => navigate(service.route)} 
-                className="shadow-sm" 
-                style={{ cursor: 'pointer' }}
+            <Col key={index} md={5} className="mb-4 px-4">
+              <StyledCard
+                onClick={() => navigate(service.route)}
+                className="text-center h-100"
               >
-                <Card.Body>
-                  <Card.Title>{service.title}</Card.Title>
-                  <Card.Text>{service.description}</Card.Text>
+                <Card.Body className="d-flex flex-column justify-content-center py-5">
+                  <ServiceIcon>
+                    {service.icon}
+                  </ServiceIcon>
+                  <Card.Title className="mb-3 fw-bold">
+                    {service.title}
+                  </Card.Title>
+                  <Card.Text className="text-muted">
+                    {service.description}
+                  </Card.Text>
                 </Card.Body>
-              </Card>
+              </StyledCard>
             </Col>
           ))}
         </Row>
@@ -115,7 +162,7 @@ const DashboardPage = () => {
           </Button>
         </Modal.Footer>
       </Modal>
-    </>
+    </StyledDashboard >
   );
 };
 
