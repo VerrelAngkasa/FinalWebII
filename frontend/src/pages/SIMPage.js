@@ -3,6 +3,18 @@ import { Card, Container, Row, Col, Modal, Button, Form, Alert } from 'react-boo
 import { useNavigate } from 'react-router-dom';
 import { getAllSIM, createSIM, getSIMById, updateSIMById, deleteSIMById } from '../services/SIMService';
 import { BsArrowLeft } from 'react-icons/bs';
+import axios from 'axios';
+
+const getAuthToken = () => localStorage.getItem('jwtToken');
+
+const setAuthHeader = () => {
+  const token = getAuthToken();
+  if (token) {
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+  } else {
+    delete axios.defaults.headers.common['Authorization'];
+  }
+};
 
 const SIMPage = () => {
   const navigate = useNavigate();
@@ -12,6 +24,7 @@ const SIMPage = () => {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedSIM, setSelectedSIM] = useState(null);
+  const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({
     layanan: 'Pembuatan SIM',
     nama: '',
@@ -21,6 +34,19 @@ const SIMPage = () => {
     harga: 0
   });
   const [alert, setAlert] = useState(null);
+
+  useEffect(() => {
+    const checkToken = async () => {
+      const token = getAuthToken();
+      if (!token) {
+        setShowModal(true);
+      } else {
+        setAuthHeader();
+      }
+    };
+
+    checkToken();
+  }, []);
 
   const tipeSIM = ['SIM A', 'SIM B1', 'SIM C'];
 
@@ -138,22 +164,23 @@ const SIMPage = () => {
   };
 
   const handleDeleteClick = (sim) => {
-    if (!sim?._id) {
+    console.log('SIM to delete:', sim); // Debug log
+    if (!sim || !sim._id) {
       setAlert('ID SIM tidak valid');
       return;
     }
-    console.log('Preparing to delete SIM:', sim);
     setSelectedSIM(sim);
     setShowDeleteModal(true);
   };
 
   const handleDeleteConfirm = async () => {
     try {
-      if (!selectedSIM?._id) {
+      if (!selectedSIM || !selectedSIM._id) {
         setAlert('ID SIM tidak valid');
         return;
       }
-      console.log('Deleting SIM with ID:', selectedSIM._id);
+
+      console.log('Deleting SIM with ID:', selectedSIM._id); // Debug log
       await deleteSIMById(selectedSIM._id);
       setShowDeleteModal(false);
       await fetchData();
@@ -195,7 +222,7 @@ const SIMPage = () => {
 
       <Row className="g-4">
         {data.map((sim) => (
-          <Col key={sim._id} lg={4} md={6}>
+          <Col key={sim.id} lg={4} md={6}>
             <Card className="h-100 shadow-sm">
               <Card.Body>
                 <Card.Title className="d-flex justify-content-between">
@@ -213,21 +240,21 @@ const SIMPage = () => {
                   <Button
                     size="sm"
                     variant="info"
-                    onClick={() => handleDetailClick(sim._id)}
+                    onClick={() => handleDetailClick(sim.id)}
                   >
                     Detail
                   </Button>
                   <Button
                     size="sm"
                     variant="warning"
-                    onClick={() => handleEditClick(sim._id)}
+                    onClick={() => handleEditClick(sim.id)}
                   >
                     Edit Tipe
                   </Button>
                   <Button
                     size="sm"
                     variant="danger"
-                    onClick={() => handleDeleteClick(sim)}
+                    onClick={() => handleDeleteClick(sim)} // Pass the entire sim object
                   >
                     Hapus
                   </Button>
@@ -237,6 +264,21 @@ const SIMPage = () => {
           </Col>
         ))}
       </Row>
+
+      {/* Modal Error */}
+      <Modal show={showModal} onHide={() => navigate('/admin/login')} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Error: Unauthorized</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          Anda tidak memiliki akses. Silakan login terlebih dahulu.
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="primary" onClick={() => navigate('/admin/login')}>
+            Login
+          </Button>
+        </Modal.Footer>
+      </Modal>
 
       {/* Create Modal */}
       <Modal show={showCreateModal} onHide={() => setShowCreateModal(false)}>
