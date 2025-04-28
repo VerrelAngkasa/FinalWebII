@@ -1,7 +1,63 @@
 import React, { useState } from 'react';
-import { Form, Button, Card, Alert, Container } from 'react-bootstrap';
+import { Form, Button, Alert } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { loginAdmin } from '../services/AdminService';
+import styled from 'styled-components';
+import { StyledPage, StyledCard, PageTitle, StyledButton } from '../components/Style';
+import Header from '../components/Header';
+
+const LoginContainer = styled.div`
+  max-width: 400px;
+  width: 100%;
+  margin: auto;
+  padding: 2rem;
+`;
+
+const LoginCard = styled(StyledCard)`
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.9);
+`;
+
+const StyledForm = styled(Form)`
+  .form-label {
+    color: #2c3e50;
+    font-weight: 500;
+  }
+
+  .form-control {
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    padding: 0.75rem;
+    transition: all 0.3s ease;
+
+    &:focus {
+      border-color: #4a90e2;
+      box-shadow: 0 0 0 0.2rem rgba(74, 144, 226, 0.25);
+    }
+  }
+`;
+
+const LoginButton = styled(StyledButton)`
+  width: 100%;
+  margin-top: 1rem;
+  padding: 0.75rem;
+  font-weight: 500;
+`;
+
+const SignupLink = styled(Button)`
+  color: #4a90e2;
+  text-decoration: none;
+  
+  &:hover {
+    color: #357abd;
+    text-decoration: underline;
+  }
+`;
+
+const AlertStyled = styled(Alert)`
+  border-radius: 8px;
+  margin-bottom: 1rem;
+`;
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -15,26 +71,25 @@ const LoginPage = () => {
       const response = await loginAdmin({ email, password });
 
       if (response && response.token) {
-        // Simpan token JWT ke localStorage
         localStorage.setItem('jwtToken', response.token);
-
-        // Navigasi ke dashboard setelah login sukses
         navigate('/dashboard');
       } else {
         setAlert('Login gagal. Periksa kembali email dan password.');
       }
     } catch (err) {
+      console.error('Login error:', err);
       setAlert('Login gagal. Periksa kembali email dan password.');
     }
   };
 
   return (
-    <Container className="d-flex justify-content-center align-items-center vh-100">
-      <Card style={{ width: '24rem' }}>
-        <Card.Body>
-          <Card.Title className="mb-4 text-center">Login Admin</Card.Title>
-          {alert && <Alert variant="danger">{alert}</Alert>}
-          <Form onSubmit={handleLogin}>
+    <StyledPage>
+      <LoginContainer>
+        <Header />
+        <LoginCard>
+          <PageTitle className="text-center mb-4">Login Admin</PageTitle>
+          {alert && <AlertStyled variant="danger">{alert}</AlertStyled>}
+          <StyledForm onSubmit={handleLogin}>
             <Form.Group className="mb-3" controlId="email">
               <Form.Label>Email</Form.Label>
               <Form.Control
@@ -42,7 +97,7 @@ const LoginPage = () => {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
+                placeholder="Masukkan email"
               />
             </Form.Group>
 
@@ -53,23 +108,23 @@ const LoginPage = () => {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
+                placeholder="Maukkan password"
               />
             </Form.Group>
 
-            <Button variant="primary" type="submit" className="w-100">
+            <LoginButton variant="primary" type="submit">
               Login
-            </Button>
-          </Form>
+            </LoginButton>
+          </StyledForm>
 
           <div className="text-center mt-3">
-            <Button variant="link" onClick={() => navigate('/admin/signup')}>
+            <SignupLink variant="link" onClick={() => navigate('/admin/signup')}>
               Belum punya akun? Ayo Signup
-            </Button>
+            </SignupLink>
           </div>
-        </Card.Body>
-      </Card>
-    </Container>
+        </LoginCard>
+      </LoginContainer>
+    </StyledPage>
   );
 };
 

@@ -10,7 +10,7 @@ exports.createSTNK = async (req, res) => {
     }
 
     // Check if the layanan is valid
-    const validLayanan = ["Pembaharuan STNK", "Pembuatan SIM"];
+    const validLayanan = ["Pembaharuan STNK"];
     if (!validLayanan.includes(layanan)) {
       return res.status(400).json({ message: "Invalid layanan type" });
     }
@@ -21,7 +21,17 @@ exports.createSTNK = async (req, res) => {
       return res.status(400).json({ message: "Nomor plat already exists" });
     }
 
-    const newSTNK = new STNK({ layanan, nomor_plat, nama, alamat, merk, tipe, tahun, harga });
+    const newSTNK = new STNK({ 
+      layanan, 
+      nomor_plat, 
+      nama, 
+      alamat, 
+      merk, 
+      tipe, 
+      tahun, 
+      harga,
+      status: 'Pending'
+    });
     const savedSTNK = await newSTNK.save();
     res.status(201).json({ message: `Successfully created new ${layanan} data`, savedSTNK });
   } catch (err) {
@@ -35,22 +45,24 @@ exports.getAllSTNK = async (req, res) => {
     const stnk = await STNK.find().sort({ createdAt: -1 });
     const stnkDetails = stnk.map((stnk) => {
       return {
-        id: stnk._id,
-        nomor_plat: stnk.nomor_plat,
+        _id: stnk._id,
         nama: stnk.nama,
-        tahun: stnk.tahun,
+        alamat: stnk.alamat,
+        merk: stnk.merk,
+        nomor_plat: stnk.nomor_plat,
         harga: stnk.harga,
-        updatedAt: stnk.updatedAt,
+        status: stnk.status
       };
-    })
+    });
     res.status(200).json(stnkDetails);
   } catch (err) {
     res.status(500).json({ message: `Error fetching STNK data`, err });
   }
 };
 
+// Get STNK by ID
 exports.getSTNKById = async (req, res) => {
-  const id = req.query.id;
+  const id = req.params.id;
   try {
     const stnk = await STNK.findById(id);
     if (!stnk) {
@@ -64,16 +76,47 @@ exports.getSTNKById = async (req, res) => {
 
 // Update STNK
 exports.updateSTNKById = async (req, res) => {
-  const id = req.query.id;
-  const { nomor_plat } = req.body;
+  const id = req.params.id;
+  const { nomor_plat, status } = req.body;
   try {
-    if(!nomor_plat) {
-      res.status(400).json({ message: 'Please fill in the required field'})
+    // Validate inputs
+    if (!nomor_plat && !status) {
+      return res.status(400).json({ message: 'Please provide nomor_plat or status to update' });
     }
 
-    const updatedAt = new Date().toISOString();
-    const updatedSTNK = await STNK.findByIdAndUpdate(id, { nomor_plat, updatedAt }, { new: true });
-    res.status(200).json({ message: `Successfully update STNK ${id} data`, updatedSTNK });
+    // Validate status if provided
+    if (status && !['Pending', 'In Progress', 'Done'].includes(status)) {
+      return res.status(400).json({ message: 'Invalid status value' });
+    }
+
+    // Check if nomor_plat already exists (if updating nomor_plat)
+    if (nomor_plat) {
+      const existingSTNK = await STNK.findOne({ nomor_plat, _id: { $ne: id } });
+      if (existingSTNK) {
+        return res.status(400).json({ message: "Nomor plat already exists" });
+      }
+    }
+
+    const updateData = {
+      ...(nomor_plat && { nomor_plat }),
+      ...(status && { status }),
+      updatedAt: new Date()
+    };
+
+    const updatedSTNK = await STNK.findByIdAndUpdate(
+      id, 
+      updateData,
+      { new: true }
+    );
+
+    if (!updatedSTNK) {
+      return res.status(404).json({ message: `STNK with ID ${id} not found` });
+    }
+
+    res.status(200).json({ 
+      message: `Successfully updated STNK ${id} data`, 
+      updatedSTNK 
+    });
   } catch (err) {
     res.status(500).json({ message: `Error updating STNK ${id} data`, err });
   }
@@ -81,10 +124,18 @@ exports.updateSTNKById = async (req, res) => {
 
 // Delete STNK
 exports.deleteSTNKById = async (req, res) => {
-  const id = req.query.id;
+  const id = req.params.id;
   try {
-    await STNK.findByIdAndDelete(id);
-    res.status(200).json({ message: `STNK ${id} deleted successfully` });
+    const deletedSTNK = await STNK.findByIdAndDelete(id);
+    
+    if (!deletedSTNK) {
+      return res.status(404).json({ message: `STNK with ID ${id} not found` });
+    }
+
+    res.status(200).json({ 
+      message: `STNK ${id} deleted successfully`,
+      deletedSTNK 
+    });
   } catch (err) {
     res.status(500).json({ message: `Error deleting STNK ${id} data`, err });
   }

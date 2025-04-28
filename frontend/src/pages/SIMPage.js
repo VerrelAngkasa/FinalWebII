@@ -4,6 +4,73 @@ import { useNavigate } from 'react-router-dom';
 import { getAllSIM, createSIM, getSIMById, updateSIMById, deleteSIMById } from '../services/SIMService';
 import { BsArrowLeft } from 'react-icons/bs';
 import axios from 'axios';
+import styled from 'styled-components';
+import { StyledPage } from '../components/Style';
+
+const SIMContainer = styled(Container)`
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  min-height: 100vh;
+  padding: 2rem;
+`;
+
+const DataCard = styled(Card)`
+  transition: all 0.3s ease;
+  border: none !important;
+  border-radius: 15px !important;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.9);
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  }
+
+  .card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+
+  .badge {
+    padding: 0.5em 1em;
+    font-weight: 500;
+  }
+`;
+
+const ActionButton = styled(Button)`
+  transition: all 0.3s ease;
+  border-radius: 8px;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+`;
+
+const StyledModal = styled(Modal)`
+  .modal-content {
+    border-radius: 15px;
+    border: none;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  }
+
+  .modal-header {
+    border-bottom: 1px solid #eee;
+    background: #f8f9fa;
+    border-radius: 15px 15px 0 0;
+  }
+
+  .modal-footer {
+    border-top: 1px solid #eee;
+    background: #f8f9fa;
+    border-radius: 0 0 15px 15px;
+  }
+`;
+
+const PageTitle = styled.h2`
+  color: #2c3e50;
+  font-weight: bold;
+  margin-bottom: 0;
+`;
 
 const getAuthToken = () => localStorage.getItem('jwtToken');
 
@@ -80,11 +147,11 @@ const SIMPage = () => {
         // First sort by status priority
         const statusCompare = STATUS_PRIORITY[a.status] - STATUS_PRIORITY[b.status];
         if (statusCompare !== 0) return statusCompare;
-        
+
         // If status is same, sort by creation date (newest first)
         return new Date(b.createdAt) - new Date(a.createdAt);
       });
-      
+
       console.log('Fetched and sorted data:', sortedData);
       setData(sortedData);
     } catch (err) {
@@ -226,268 +293,259 @@ const SIMPage = () => {
   };
 
   return (
-    <Container fluid className="p-4">
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <div className="d-flex align-items-center">
-          <Button
-            variant="link"
-            className="p-0 me-3"
-            onClick={() => navigate('/dashboard')}
-          >
-            <BsArrowLeft size={24} />
-          </Button>
-          <h2 className="mb-0">Data Pembuatan SIM | Sumatra Jaya Abadi</h2>
+    <StyledPage>
+      <Container fluid className="p-4">
+        <div className="d-flex justify-content-between align-items-center mb-4">
+          <div className="d-flex align-items-center">
+            <ActionButton
+              variant="link"
+              className="p-0 me-3"
+              onClick={() => navigate('/dashboard')}
+            >
+              <BsArrowLeft size={24} />
+            </ActionButton>
+            <PageTitle>Data Pembuatan SIM | Sumatera Jaya Abadi</PageTitle>
+          </div>
+          <ActionButton variant="primary" onClick={() => setShowCreateModal(true)}>
+            + Tambah Data
+          </ActionButton>
         </div>
-        <Button variant="primary" onClick={() => setShowCreateModal(true)}>
-          + Tambah Data
-        </Button>
-      </div>
 
-      <Modal
-        show={notification.show}
-        onHide={() => setNotification({ show: false, message: '' })}
-        centered
-        size="sm"
-      >
-        <Modal.Body className="text-center py-4">
-          {notification.message}
-        </Modal.Body>
-      </Modal>
-
-      <Row className="g-4">
-        {data.length === 0 ? (
-          <Col xs={12}>
-            <Alert variant="info" className="text-center">
-              Belum ada data Pembuatan SIM
-            </Alert>
-          </Col>
-        ) : (
-          data.map((sim) => (
-            <Col key={sim._id} lg={3} md={6}>
-              <Card className="h-100 shadow-sm">
-                <Card.Body>
-                  <Card.Title className="d-flex justify-content-between align-items-center mb-3">
-                    <span className="text-truncate">{sim.nama}</span>
-                    <small className="text-muted">{sim.tipe}</small>
-                  </Card.Title>
-                  <div className="mb-3">
-                    <div className="mb-2">
-                      <strong>Alamat:</strong>{' '}
-                      <span className="text-wrap">{sim.alamat}</span>
-                    </div>
-                    <div className="mb-2">
-                      <strong>Tahun:</strong>{' '}
-                      {sim.tahun}
-                    </div>
-                    <div className="mb-2">
-                      <strong>Harga:</strong>{' '}
-                      Rp {sim.harga?.toLocaleString('id-ID')}
-                    </div>
-                    <div className="mb-2">
-                      <strong>Status:</strong>{' '}
-                      <Badge bg={STATUS_COLORS[sim.status]}>
+        <Row className="g-4">
+          {data.length === 0 ? (
+            <Col xs={12}>
+              <Alert variant="info" className="text-center rounded-3 shadow-sm">
+                Belum ada data Pembuatan SIM
+              </Alert>
+            </Col>
+          ) : (
+            data.map((sim) => (
+              <Col key={sim._id} lg={3} md={6}>
+                <DataCard>
+                  <Card.Body>
+                    <Card.Title className="d-flex justify-content-between align-items-center mb-3">
+                      <span className="text-truncate">{sim.nama}</span>
+                      <Badge bg={STATUS_COLORS[sim.status]} className="ms-2">
                         {sim.status}
                       </Badge>
+                    </Card.Title>
+                    <div className="mb-3">
+                      <p className="mb-2">
+                        <strong>Alamat:</strong>{' '}
+                        <span className="text-wrap">{sim.alamat}</span>
+                      </p>
+                      <p className="mb-2">
+                        <strong>Tipe:</strong>{' '}
+                        <span className="text-muted">{sim.tipe}</span>
+                      </p>
+                      <p className="mb-2">
+                        <strong>Tahun:</strong>{' '}
+                        {sim.tahun}
+                      </p>
+                      <p className="mb-2">
+                        <strong>Harga:</strong>{' '}
+                        <span>Rp {sim.harga?.toLocaleString('id-ID')}</span>
+                      </p>
                     </div>
-                  </div>
-                  <div className="d-flex gap-2">
-                    <Button
-                      size="sm"
-                      variant="info"
-                      onClick={() => handleDetailClick(sim._id)}  // Changed from sim.id to sim._id
-                    >
-                      Detail
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="warning"
-                      onClick={() => handleEditClick(sim._id)}  // Changed from sim.id to sim._id
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="danger"
-                      onClick={() => handleDeleteClick(sim)}
-                    >
-                      Hapus
-                    </Button>
-                  </div>
-                </Card.Body>
-              </Card>
-            </Col>
-          ))
-        )}
-      </Row>
-
-      <Modal show={showModal} onHide={() => navigate('/admin/login')} centered>
-        <Modal.Header closeButton>
-          <Modal.Title>Error: Unauthorized</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          Anda tidak memiliki akses. Silakan login terlebih dahulu.
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="primary" onClick={() => navigate('/admin/login')}>
-            Login
-          </Button>
-        </Modal.Footer>
-      </Modal>
-
-      <Modal show={showCreateModal} onHide={() => setShowCreateModal(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>Tambah Data SIM</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form>
-            <Form.Group className="mb-3">
-              <Form.Label>Nama</Form.Label>
-              <Form.Control
-                type="text"
-                value={formData.nama}
-                onChange={(e) => setFormData({ ...formData, nama: e.target.value })}
-                required
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Alamat</Form.Label>
-              <Form.Control
-                as="textarea"
-                rows={3}
-                value={formData.alamat}
-                onChange={(e) => setFormData({ ...formData, alamat: e.target.value })}
-                required
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Tipe SIM</Form.Label>
-              <Form.Select
-                value={formData.tipe}
-                onChange={(e) => setFormData({ ...formData, tipe: e.target.value })}
-              >
-                {tipeSIM.map((tipe) => (
-                  <option key={tipe} value={tipe}>{tipe}</option>
-                ))}
-              </Form.Select>
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Tahun</Form.Label>
-              <Form.Control
-                type="number"
-                value={formData.tahun}
-                onChange={(e) => setFormData({ ...formData, tahun: parseInt(e.target.value) })}
-                required
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Harga</Form.Label>
-              <Form.Control
-                type="number"
-                value={formData.harga}
-                onChange={(e) => setFormData({ ...formData, harga: parseInt(e.target.value) })}
-                required
-              />
-            </Form.Group>
-          </Form>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowCreateModal(false)}>
-            Batal
-          </Button>
-          <Button variant="primary" onClick={handleCreateSIM}>
-            Simpan
-          </Button>
-        </Modal.Footer>
-      </Modal>
-
-      <Modal show={showDetailModal} onHide={() => setShowDetailModal(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>Detail SIM</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {selectedSIM && (
-            <div>
-              <p><strong>Layanan:</strong> {selectedSIM.layanan}</p>
-              <p><strong>Nama:</strong> {selectedSIM.nama}</p>
-              <p><strong>Alamat:</strong> {selectedSIM.alamat}</p>
-              <p><strong>Tipe SIM:</strong> {selectedSIM.tipe}</p>
-              <p><strong>Tahun:</strong> {selectedSIM.tahun}</p>
-              <p><strong>Harga:</strong> Rp {selectedSIM.harga?.toLocaleString('id-ID')}</p>
-              <p>
-                <strong>Status:</strong>{' '}
-                <Badge bg={STATUS_COLORS[selectedSIM.status]}>
-                  {selectedSIM.status}
-                </Badge>
-              </p>
-              <p><strong>Dibuat:</strong> {new Date(selectedSIM.createdAt).toLocaleString()}</p>
-              <p><strong>Diperbarui:</strong> {new Date(selectedSIM.updatedAt).toLocaleString()}</p>
-            </div>
+                    <div className="d-flex gap-2">
+                      <ActionButton
+                        size="sm"
+                        variant="info"
+                        onClick={() => handleDetailClick(sim._id)}
+                      >
+                        Detail
+                      </ActionButton>
+                      <ActionButton
+                        size="sm"
+                        variant="warning"
+                        onClick={() => handleEditClick(sim._id)}
+                      >
+                        Edit
+                      </ActionButton>
+                      <ActionButton
+                        size="sm"
+                        variant="danger"
+                        onClick={() => handleDeleteClick(sim)}
+                      >
+                        Hapus
+                      </ActionButton>
+                    </div>
+                  </Card.Body>
+                </DataCard>
+              </Col>
+            ))
           )}
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowDetailModal(false)}>
-            Tutup
-          </Button>
-        </Modal.Footer>
-      </Modal>
+        </Row>
 
-      <Modal show={showEditModal} onHide={() => setShowEditModal(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>Edit Data SIM</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form>
-            <Form.Group className="mb-3">
-              <Form.Label>Tipe SIM</Form.Label>
-              <Form.Select
-                value={formData.tipe}
-                onChange={(e) => setFormData({ ...formData, tipe: e.target.value })}
-              >
-                {tipeSIM.map((tipe) => (
-                  <option key={tipe} value={tipe}>{tipe}</option>
-                ))}
-              </Form.Select>
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Status</Form.Label>
-              <Form.Select
-                value={formData.status}
-                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-              >
-                {STATUS_OPTIONS.map((status) => (
-                  <option key={status} value={status}>{status}</option>
-                ))}
-              </Form.Select>
-            </Form.Group>
-          </Form>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowEditModal(false)}>
-            Batal
-          </Button>
-          <Button variant="primary" onClick={handleUpdateSIM}>
-            Simpan
-          </Button>
-        </Modal.Footer>
-      </Modal>
+        <StyledModal show={showModal} onHide={() => navigate('/admin/login')} centered>
+          <Modal.Header closeButton>
+            <Modal.Title>Error: Unauthorized</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            Anda tidak memiliki akses. Silakan login terlebih dahulu.
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="primary" onClick={() => navigate('/admin/login')}>
+              Login
+            </Button>
+          </Modal.Footer>
+        </StyledModal>
 
-      <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>Konfirmasi Hapus</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          Apakah Anda yakin ingin menghapus data SIM {selectedSIM?.nama}?
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
-            Batal
-          </Button>
-          <Button variant="danger" onClick={handleDeleteConfirm}>
-            Hapus
-          </Button>
-        </Modal.Footer>
-      </Modal>
-    </Container>
+        <StyledModal show={showCreateModal} onHide={() => setShowCreateModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Tambah Data SIM</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Form>
+              <Form.Group className="mb-3">
+                <Form.Label>Nama</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={formData.nama}
+                  onChange={(e) => setFormData({ ...formData, nama: e.target.value })}
+                  required
+                />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Alamat</Form.Label>
+                <Form.Control
+                  as="textarea"
+                  rows={3}
+                  value={formData.alamat}
+                  onChange={(e) => setFormData({ ...formData, alamat: e.target.value })}
+                  required
+                />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Tipe SIM</Form.Label>
+                <Form.Select
+                  value={formData.tipe}
+                  onChange={(e) => setFormData({ ...formData, tipe: e.target.value })}
+                >
+                  {tipeSIM.map((tipe) => (
+                    <option key={tipe} value={tipe}>{tipe}</option>
+                  ))}
+                </Form.Select>
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Tahun</Form.Label>
+                <Form.Control
+                  type="number"
+                  value={formData.tahun}
+                  onChange={(e) => setFormData({ ...formData, tahun: parseInt(e.target.value) })}
+                  required
+                />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Harga</Form.Label>
+                <Form.Control
+                  type="number"
+                  value={formData.harga}
+                  onChange={(e) => setFormData({ ...formData, harga: parseInt(e.target.value) })}
+                  required
+                />
+              </Form.Group>
+            </Form>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={() => setShowCreateModal(false)}>
+              Batal
+            </Button>
+            <Button variant="primary" onClick={handleCreateSIM}>
+              Simpan
+            </Button>
+          </Modal.Footer>
+        </StyledModal>
+
+        <StyledModal show={showDetailModal} onHide={() => setShowDetailModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Detail SIM</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            {selectedSIM && (
+              <div>
+                <p><strong>Layanan:</strong> {selectedSIM.layanan}</p>
+                <p><strong>Nama:</strong> {selectedSIM.nama}</p>
+                <p><strong>Alamat:</strong> {selectedSIM.alamat}</p>
+                <p><strong>Tipe SIM:</strong> {selectedSIM.tipe}</p>
+                <p><strong>Tahun:</strong> {selectedSIM.tahun}</p>
+                <p><strong>Harga:</strong> Rp {selectedSIM.harga?.toLocaleString('id-ID')}</p>
+                <p>
+                  <strong>Status:</strong>{' '}
+                  <Badge bg={STATUS_COLORS[selectedSIM.status]}>
+                    {selectedSIM.status}
+                  </Badge>
+                </p>
+                <p><strong>Dibuat:</strong> {new Date(selectedSIM.createdAt).toLocaleString()}</p>
+                <p><strong>Diperbarui:</strong> {new Date(selectedSIM.updatedAt).toLocaleString()}</p>
+              </div>
+            )}
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={() => setShowDetailModal(false)}>
+              Tutup
+            </Button>
+          </Modal.Footer>
+        </StyledModal>
+
+        <StyledModal show={showEditModal} onHide={() => setShowEditModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Edit Data SIM</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Form>
+              <Form.Group className="mb-3">
+                <Form.Label>Tipe SIM</Form.Label>
+                <Form.Select
+                  value={formData.tipe}
+                  onChange={(e) => setFormData({ ...formData, tipe: e.target.value })}
+                >
+                  {tipeSIM.map((tipe) => (
+                    <option key={tipe} value={tipe}>{tipe}</option>
+                  ))}
+                </Form.Select>
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Status</Form.Label>
+                <Form.Select
+                  value={formData.status}
+                  onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                >
+                  {STATUS_OPTIONS.map((status) => (
+                    <option key={status} value={status}>{status}</option>
+                  ))}
+                </Form.Select>
+              </Form.Group>
+            </Form>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={() => setShowEditModal(false)}>
+              Batal
+            </Button>
+            <Button variant="primary" onClick={handleUpdateSIM}>
+              Simpan
+            </Button>
+          </Modal.Footer>
+        </StyledModal>
+
+        <StyledModal show={showDeleteModal} onHide={() => setShowDeleteModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Konfirmasi Hapus</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            Apakah Anda yakin ingin menghapus data SIM {selectedSIM?.nama}?
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
+              Batal
+            </Button>
+            <Button variant="danger" onClick={handleDeleteConfirm}>
+              Hapus
+            </Button>
+          </Modal.Footer>
+        </StyledModal>
+      </Container>
+    </StyledPage>
   );
 };
 

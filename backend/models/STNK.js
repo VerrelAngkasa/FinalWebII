@@ -36,6 +36,11 @@ const stnkSchema = new mongoose.Schema({
         type: Number,
         required: true,
     },
+    status: {
+        type: String,
+        default: "Pending",
+        enum: ["Pending", "In Progress", "Done"],
+    },
     createdAt: {
         type: Date,
         default: Date.now,

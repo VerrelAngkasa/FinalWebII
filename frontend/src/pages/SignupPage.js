@@ -1,7 +1,63 @@
 import React, { useState } from 'react';
-import { Form, Button, Card, Alert, Container } from 'react-bootstrap';
+import { Form, Button, Alert } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { signupAdmin } from '../services/AdminService';
+import styled from 'styled-components';
+import { StyledPage, StyledCard, PageTitle, StyledButton } from '../components/Style';
+import Header from '../components/Header';
+
+const SignupContainer = styled.div`
+  max-width: 400px;
+  width: 100%;
+  margin: auto;
+  padding: 2rem;
+`;
+
+const SignupCard = styled(StyledCard)`
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.9);
+`;
+
+const StyledForm = styled(Form)`
+  .form-label {
+    color: #2c3e50;
+    font-weight: 500;
+  }
+
+  .form-control {
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    padding: 0.75rem;
+    transition: all 0.3s ease;
+
+    &:focus {
+      border-color: #4a90e2;
+      box-shadow: 0 0 0 0.2rem rgba(74, 144, 226, 0.25);
+    }
+  }
+`;
+
+const SignupButton = styled(StyledButton)`
+  width: 100%;
+  margin-top: 1rem;
+  padding: 0.75rem;
+  font-weight: 500;
+`;
+
+const LoginLink = styled(Button)`
+  color: #4a90e2;
+  text-decoration: none;
+  
+  &:hover {
+    color: #357abd;
+    text-decoration: underline;
+  }
+`;
+
+const AlertStyled = styled(Alert)`
+  border-radius: 8px;
+  margin-bottom: 1rem;
+`;
 
 const SignupPage = () => {
   const navigate = useNavigate();
@@ -12,53 +68,86 @@ const SignupPage = () => {
 
   const handleSignup = async (e) => {
     e.preventDefault();
+
     try {
       const response = await signupAdmin({ name, email, password });
-      if (response) {
-        navigate('/admin/login');
+
+      if (response && response.message) {
+        setAlert({ type: 'success', message: 'Registrasi berhasil! Silakan login.' });
+        setTimeout(() => {
+          navigate('/admin/login');
+        }, 2000);
       } else {
-        setAlert('Signup gagal. Periksa kembali nama, email dan password.');
+        setAlert({ type: 'danger', message: 'Registrasi gagal. Silakan coba lagi.' });
       }
     } catch (err) {
-      setAlert('Signup gagal. Periksa kembali nama, email dan password.');
+      console.error('Signup error:', err);
+      setAlert({
+        type: 'danger',
+        message: err.response?.data?.message || 'Registrasi gagal. Silakan coba lagi.'
+      });
     }
-  }
+  };
 
   return (
-    <Container className="d-flex justify-content-center align-items-center vh-100">
-      <Card style={{ width: '24rem' }}>
-        <Card.Body>
-          <Card.Title className="mb-4 text-center">Signup Admin</Card.Title>
-          {alert && <Alert variant="danger">{alert}</Alert>}
-          <Form onSubmit={handleSignup}>
+    <StyledPage>
+      <SignupContainer>
+        <Header />
+        <SignupCard>
+          <PageTitle className="text-center mb-4">Register Admin</PageTitle>
+          {alert && (
+            <AlertStyled variant={alert.type || 'danger'}>
+              {alert.message || alert}
+            </AlertStyled>
+          )}
+          <StyledForm onSubmit={handleSignup}>
             <Form.Group className="mb-3" controlId="name">
               <Form.Label>Nama</Form.Label>
-              <Form.Control type="text" required value={name} onChange={(e) => setName(e.target.value)} placeholder='Enter your name' />
+              <Form.Control
+                type="text"
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Masukkan nama"
+              />
             </Form.Group>
 
             <Form.Group className="mb-3" controlId="email">
               <Form.Label>Email</Form.Label>
-              <Form.Control type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder='Enter your email' />
+              <Form.Control
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Masukkan email"
+              />
             </Form.Group>
 
             <Form.Group className="mb-3" controlId="password">
               <Form.Label>Password</Form.Label>
-              <Form.Control type="password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder='Enter your password' />
+              <Form.Control
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Masukkan password"
+                minLength="6"
+              />
             </Form.Group>
 
-            <Button variant="success" type="submit" className="w-100">
-              Signup
-            </Button>
-          </Form>
+            <SignupButton variant="primary" type="submit">
+              Register
+            </SignupButton>
+          </StyledForm>
 
           <div className="text-center mt-3">
-            <Button variant="link" onClick={() => navigate('/admin/login')}>
-              Sudah punya akun? Ayo Login
-            </Button>
+            <LoginLink variant="link" onClick={() => navigate('/admin/login')}>
+              Sudah punya akun? Login disini
+            </LoginLink>
           </div>
-        </Card.Body>
-      </Card>
-    </Container>
+        </SignupCard>
+      </SignupContainer>
+    </StyledPage>
   );
 };
 

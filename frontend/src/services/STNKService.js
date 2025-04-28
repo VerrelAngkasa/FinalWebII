@@ -15,6 +15,18 @@ const setAuthHeader = () => {
   }
 };
 
+// Create New STNK Data
+export const createSTNK = async (data) => {
+  setAuthHeader(); // Set Authorization header
+  try {
+    const response = await axios.post('/data/stnk', data);
+    return response.data;
+  } catch (err) {
+    console.error('Error creating new STNK data:', err);
+    throw err;
+  }
+};
+
 // Get All STNK Data
 export const getAllSTNK = async () => {
   setAuthHeader(); // Set Authorization header
@@ -29,9 +41,9 @@ export const getAllSTNK = async () => {
 
 // Get STNK Data by ID
 export const getSTNKById = async (id) => {
-  setAuthHeader(); // Set Authorization header
+  setAuthHeader();
   try {
-    const response = await axios.get(`/data/stnk/id?${id}`);
+    const response = await axios.get(`/data/stnk/${id}`); // Fix: Correct URL format
     return response.data;
   } catch (err) {
     console.error(`Error getting STNK ${id} data:`, err);
@@ -39,23 +51,11 @@ export const getSTNKById = async (id) => {
   }
 };
 
-// Create New STNK Data
-export const createSTNK = async (data) => {
-  setAuthHeader(); // Set Authorization header
-  try {
-    const response = await axios.post('/data/stnk', data);
-    return response.data;
-  } catch (err) {
-    console.error('Error creating new STNK data:', err);
-    throw err;
-  }
-};
-
 // Update Existing STNK Data
 export const updateSTNKById = async (id, data) => {
-  setAuthHeader(); // Set Authorization header
+  setAuthHeader();
   try {
-    const response = await axios.put(`/data/stnk/id?${id}`, data);
+    const response = await axios.put(`/data/stnk/${id}`, data); // Fix: Correct URL format
     return response.data;
   } catch (err) {
     console.error(`Error updating STNK ${id} data:`, err);
@@ -65,9 +65,10 @@ export const updateSTNKById = async (id, data) => {
 
 // Delete STNK Data
 export const deleteSTNKById = async (id) => {
-  setAuthHeader(); // Set Authorization header
+  setAuthHeader();
   try {
-    await axios.delete(`/data/stnk/id?${id}`);
+    const response = await axios.delete(`/data/stnk/${id}`); // Fix: Correct URL format
+    return response.data; // Add: Return response data
   } catch (err) {
     console.error(`Error deleting STNK ${id} data:`, err);
     throw err;

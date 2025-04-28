@@ -5,6 +5,25 @@ import axios from 'axios';
 import { logoutAdmin } from '../services/AdminService';
 import { FaIdCard, FaCarAlt } from 'react-icons/fa';
 import styled from 'styled-components';
+import Header from '../components/Header';
+
+const DashboardHeader = styled.div`
+  padding: 2rem 0;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 15px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-bottom: 3rem;
+`;
+
+const DashboardTitle = styled.h2`
+  color: #2c3e50;
+  font-weight: bold;
+  margin-bottom: 0;
+`;
+
+const DashboardContainer = styled(Container)`
+  padding: 2rem;
+`;
 
 const StyledDashboard = styled.div`
   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
@@ -19,23 +38,74 @@ const StyledCard = styled(Card)`
   border: none !important;
   border-radius: 15px !important;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.9);
+  height: 300px;
 
   &:hover {
     transform: translateY(-5px);
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
   }
+
+  .card-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+  }
 `;
 
 const ServiceIcon = styled.div`
   color: #3498db;
-  margin-bottom: 1rem;
-  font-size: 2.5rem;
+  margin-bottom: 1.5rem;
+  font-size: 3rem;
+  
+  svg {
+    filter: drop-shadow(0 4px 6px rgba(52, 152, 219, 0.3));
+  }
 `;
 
-const DashboardTitle = styled.h2`
-  color: #2c3e50;
+const ServiceTitle = styled(Card.Title)`
+  font-size: 1.5rem;
   font-weight: bold;
-  margin-bottom: 0;
+  color: #2c3e50;
+  margin-bottom: 1rem;
+`;
+
+const ServiceDescription = styled(Card.Text)`
+  color: #7f8c8d;
+  font-size: 1rem;
+  line-height: 1.5;
+  text-align: center;
+`;
+
+const LogoutButton = styled(Button)`
+  padding: 0.75rem 2rem;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+  }
+`;
+
+const StyledModal = styled(Modal)`
+  .modal-content {
+    border-radius: 15px;
+    border: none;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  }
+
+  .modal-header {
+    background: #f8f9fa;
+    border-radius: 15px 15px 0 0;
+  }
+
+  .modal-footer {
+    background: #f8f9fa;
+    border-radius: 0 0 15px 15px;
+  }
 `;
 
 const getAuthToken = () => localStorage.getItem('jwtToken');
@@ -94,41 +164,37 @@ const DashboardPage = () => {
 
   return (
     <StyledDashboard>
-      <Container className="py-5 flex-grow-1">
-        <div className="d-flex justify-content-between align-items-center mb-5">
+      <DashboardContainer fluid>
+        <DashboardHeader className="text-center">
+          <Header />
+        </DashboardHeader>
+
+        <div className="d-flex justify-content-between align-items-center mb-4">
           <DashboardTitle>Dashboard Admin</DashboardTitle>
-          <Button
+          <LogoutButton
             variant="danger"
             onClick={() => setShowLogoutModal(true)}
-            className="px-4 py-2"
           >
             Logout
-          </Button>
+          </LogoutButton>
         </div>
 
-        <Row className="justify-content-center align-items-center" style={{ minHeight: '60vh' }}>
+        <Row className="justify-content-center g-4">
           {services.map((service, index) => (
-            <Col key={index} md={5} className="mb-4 px-4">
-              <StyledCard
-                onClick={() => navigate(service.route)}
-                className="text-center h-100"
-              >
-                <Card.Body className="d-flex flex-column justify-content-center py-5">
+            <Col key={index} lg={5} md={6} className="px-4">
+              <StyledCard onClick={() => navigate(service.route)}>
+                <Card.Body>
                   <ServiceIcon>
                     {service.icon}
                   </ServiceIcon>
-                  <Card.Title className="mb-3 fw-bold">
-                    {service.title}
-                  </Card.Title>
-                  <Card.Text className="text-muted">
-                    {service.description}
-                  </Card.Text>
+                  <ServiceTitle>{service.title}</ServiceTitle>
+                  <ServiceDescription>{service.description}</ServiceDescription>
                 </Card.Body>
               </StyledCard>
             </Col>
           ))}
         </Row>
-      </Container>
+      </DashboardContainer>
 
       {/* Modal Error */}
       <Modal show={showModal} onHide={() => navigate('/admin/login')} centered>
