@@ -16,7 +16,7 @@ app.use(cors());
 app.use(express.json());
 
 // Database Connection
-mongoose.connect('mongodb+srv://sja-user:sja123@cluster1.8oox96x.mongodb.net/db-sja?retryWrites=true&w=majority', {
+mongoose.connect('mongodb+srv://sja-user:sja123@cluster1.8oox96x.mongodb.net/db-sja', {
     useNewUrlParser: true,
     useUnifiedTopology: true,
 }).then(() => console.log("MongoDB connected successfully"))
@@ -29,5 +29,5 @@ app.use('/data/sim', dataSIMRoutes);
 
 // Start Server
 app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+    console.log(`Server running on http://0.0.0.0:${PORT}`);
 });
