@@ -16,7 +16,7 @@ app.use(cors());
 app.use(express.json());
 
 // Database Connection
-mongoose.connect('mongodb+srv://sja-user:sja123@cluster1.8oox96x.mongodb.net/db-sja', {
+mongoose.connect('mongodb+srv://sja-user:sja123@cluster1.8oox96x.mongodb.net/db-sja?retryWrites=true&w=majority', {
     useNewUrlParser: true,
     useUnifiedTopology: true,
 }).then(() => console.log("MongoDB connected successfully"))
