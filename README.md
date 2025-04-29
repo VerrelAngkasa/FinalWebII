@@ -7,17 +7,17 @@ This is a website-application designed to help Sumatera Jaya Abadi to consistent
 Technology Stack
 
 # Backend
-Language: JavaScript (Node.js)
-Framework: Express.js
-Database: MongoDB with Mongoose ODM
-Authentication: JWT (jsonwebtoken)
-Password Hashing: bcryptjs
+- Language: JavaScript (Node.js)
+- Framework: Express.js
+- Database: MongoDB with Mongoose ODM
+- Authentication: JWT (jsonwebtoken)
+- Password Hashing: bcryptjs
 
 # Frontend
-Language: JavaScript
-Framework: React
-User Interaface Framework: react-bootstrap
-API Consumer: Axios
+- Language: JavaScript
+- Framework: React
+- User Interaface Framework: react-bootstrap
+- API Consumer: Axios
 
 # Admin Authentication API
 
