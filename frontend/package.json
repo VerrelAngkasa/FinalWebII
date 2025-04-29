@@ -1,6 +1,5 @@
 {
   "name": "frontend",
-  "proxy": "https://sja-backend-629152958854.asia-southeast2.run.app",
   "version": "0.1.0",
   "private": true,
   "dependencies": {

@@ -1,5 +1,7 @@
 import axios from 'axios';
 
+const API_URL='https://sja-backend-629152958854.asia-southeast2.run.app';
+
 // Helper function to get the JWT token from localStorage (or sessionStorage)
 const getAuthToken = () => {
   return localStorage.getItem('jwtToken'); // Assuming the token is stored in localStorage
@@ -19,7 +21,7 @@ const setAuthHeader = () => {
 export const createSTNK = async (data) => {
   setAuthHeader(); // Set Authorization header
   try {
-    const response = await axios.post('/api/data/stnk', data);
+    const response = await axios.post(`${API_URL}/data/stnk`, data);
     return response.data;
   } catch (err) {
     console.error('Error creating new STNK data:', err);
@@ -31,7 +33,7 @@ export const createSTNK = async (data) => {
 export const getAllSTNK = async () => {
   setAuthHeader(); // Set Authorization header
   try {
-    const response = await axios.get('/api/data/stnk');
+    const response = await axios.get(`${API_URL}/data/stnk`);
     return response.data;
   } catch (err) {
     console.error('Error fetching STNK data:', err);
@@ -43,7 +45,7 @@ export const getAllSTNK = async () => {
 export const getSTNKById = async (id) => {
   setAuthHeader();
   try {
-    const response = await axios.get(`/api/data/stnk/${id}`); // Fix: Correct URL format
+    const response = await axios.get(`${API_URL}/data/stnk/${id}`); // Fix: Correct URL format
     return response.data;
   } catch (err) {
     console.error(`Error getting STNK ${id} data:`, err);
@@ -55,7 +57,7 @@ export const getSTNKById = async (id) => {
 export const updateSTNKById = async (id, data) => {
   setAuthHeader();
   try {
-    const response = await axios.put(`/api/data/stnk/${id}`, data); // Fix: Correct URL format
+    const response = await axios.put(`${API_URL}/data/stnk/${id}`, data); // Fix: Correct URL format
     return response.data;
   } catch (err) {
     console.error(`Error updating STNK ${id} data:`, err);
@@ -67,7 +69,7 @@ export const updateSTNKById = async (id, data) => {
 export const deleteSTNKById = async (id) => {
   setAuthHeader();
   try {
-    const response = await axios.delete(`/api/data/stnk/${id}`); // Fix: Correct URL format
+    const response = await axios.delete(`${API_URL}/data/stnk/${id}`); // Fix: Correct URL format
     return response.data; // Add: Return response data
   } catch (err) {
     console.error(`Error deleting STNK ${id} data:`, err);
