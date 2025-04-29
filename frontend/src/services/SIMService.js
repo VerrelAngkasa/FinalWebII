@@ -16,7 +16,7 @@ const setAuthHeader = () => {
 export const getAllSIM = async () => {
     setAuthHeader();
     try {
-        const response = await axios.get('/data/sim');
+        const response = await axios.get('/api/data/sim');
         return response.data;
     } catch (err) {
         console.error('Error fetching SIM data:', err);
@@ -28,7 +28,7 @@ export const getSIMById = async (id) => {
     setAuthHeader();
     try {
         console.log('Getting SIM with ID:', id); // Debug log
-        const response = await axios.get(`/data/sim/${id}`);
+        const response = await axios.get(`/api/data/sim/${id}`);
         return response.data;
     } catch (err) {
         console.error(`Error getting SIM ${id}:`, err);
@@ -39,7 +39,7 @@ export const getSIMById = async (id) => {
 export const createSIM = async (data) => {
     setAuthHeader();
     try {
-        const response = await axios.post('/data/sim', data);
+        const response = await axios.post('/api/data/sim', data);
         return response.data;
     } catch (err) {
         console.error('Error creating SIM:', err);
@@ -51,7 +51,7 @@ export const updateSIMById = async (id, data) => {
     setAuthHeader();
     try {
         console.log('Updating SIM with ID:', id, 'Data:', data); // Debug log
-        const response = await axios.put(`/data/sim/${id}`, data);
+        const response = await axios.put(`/api/data/sim/${id}`, data);
         return response.data;
     } catch (err) {
         console.error(`Error updating SIM ${id}:`, err);
@@ -63,7 +63,7 @@ export const deleteSIMById = async (id) => {
     setAuthHeader();
     try {
         console.log('Deleting SIM with ID:', id); // Debug log
-        const response = await axios.delete(`/data/sim/${id}`);
+        const response = await axios.delete(`/api/data/sim/${id}`);
         return response.data;
     } catch (err) {
         console.error(`Error deleting SIM ${id}:`, err);
